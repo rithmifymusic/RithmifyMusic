@@ -43,7 +43,7 @@ const ICON = {
   mini: svg('M14 3h7v7h-2V6.400l-5.300 5.300-1.400-1.400L17.600 5H14zM3 14h2v3.600l5.300-5.300 1.400 1.400L6.400 19H10v2H3z', 18),
 };
 const SI_RADIO_STATIONS = [
-  { id: 'val202', name: 'Val 202', freq: '98.9 FM', style: 'Pop · rock · aktualno', group: 'Pop', color: '#f07043', stream: 'https://mp3.rtvslo.si/val202', page: 'https://siradio.si/val202/', logo: 'val202', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'val202', name: 'Val 202', freq: '98.9 FM', style: 'Pop · rock · aktualno', group: 'Pop', color: '#f07043', stream: 'https://mp3.rtvslo.si/val202', page: 'https://siradio.si/val202/', logo: 'val202', bands: ['FM', 'DAB'] },
   { id: 'ena', name: 'Radio 1', freq: '89.7 FM', style: 'Največji hiti', group: 'Pop', color: '#ee4266', stream: 'https://live.radio.si/Radio1', page: 'https://siradio.si/ena/', logo: 'ena', bands: ['FM', 'DAB'] },
   { id: 'frajer', name: 'Radio Frajer', freq: 'Spletni radio', style: 'Domaci in tuji hiti', group: 'Domaca', color: '#cf5b47', stream: 'https://stream.nextmedia.si/proxy/frajer_1?mp=/frajer', page: 'https://radiofrajer.si/', logo: 'radio-frajer', bands: ['DAB'] },
   { id: 'juboks', name: 'Radio Juboks', freq: 'DAB+', style: 'Domaci in tuji hiti � nostalgija', group: 'DAB', color: '#d4a63c', stream: 'https://stream.nextmedia.si/proxy/juboks_1?mp=/juboks?uid=jubweb', page: 'https://www.juboks.si/live/juboks', logo: 'juboks', bands: ['DAB'] },
@@ -54,9 +54,9 @@ const SI_RADIO_STATIONS = [
   { id: 'city', name: 'Radio City', freq: '100.8 FM', style: 'Maribor · hiti in humor', group: 'Pop', color: '#e2a533', stream: 'https://stream1.radiocity.si/CityMp3128.mp3', page: 'https://siradio.si/city/', logo: 'city', bands: ['FM', 'DAB'], streams: ['https://stream1.radiocity.si/CityMp3128.mp3', 'http://82.149.22.34:8000/CityMp364mono.mp3'] },
   { id: 'center', name: 'Radio Center', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
   { id: 'capris', name: 'Radio Capris', freq: '91.7 FM', style: 'Primorska · pop hiti', group: 'Pop', color: '#3286e8', stream: 'https://stream.exit.si/live', page: 'https://siradio.si/capris/', logo: 'capris', bands: ['FM', 'DAB'] },
-  { id: 'ars', name: 'Radio Ars', freq: '96.5 FM', style: 'Kultura · umetnost · klasika', group: 'Kultura', color: '#8a6cb8', stream: 'https://mp3.rtvslo.si/ars', page: 'https://siradio.si/ars/', logo: 'ars', logoFormat: 'svg', bands: ['FM', 'DAB'] },
-  { id: 'prvi', name: 'Radio Prvi', freq: '91.8 FM', style: 'Informacije · pogovori', group: 'Govorni', color: '#5184c5', stream: 'https://mp3.rtvslo.si/ra1', page: 'https://siradio.si/prvi/', logo: 'prvi', logoFormat: 'svg', bands: ['FM', 'DAB'] },
-  { id: 'si', name: 'Radio Si', freq: '91.9 FM', style: 'Slovenia International', group: 'Pop', color: '#36a8a0', stream: 'https://mp3.rtvslo.si/rsi', page: 'https://siradio.si/si/', logo: 'si', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'ars', name: 'Radio Ars', freq: '96.5 FM', style: 'Kultura · umetnost · klasika', group: 'Kultura', color: '#8a6cb8', stream: 'https://mp3.rtvslo.si/ars', page: 'https://siradio.si/ars/', logo: 'ars', bands: ['FM', 'DAB'] },
+  { id: 'prvi', name: 'Radio Prvi', freq: '91.8 FM', style: 'Informacije · pogovori', group: 'Govorni', color: '#5184c5', stream: 'https://mp3.rtvslo.si/ra1', page: 'https://siradio.si/prvi/', logo: 'prvi', bands: ['FM', 'DAB'] },
+  { id: 'si', name: 'Radio Si', freq: '91.9 FM', style: 'Slovenia International', group: 'Pop', color: '#36a8a0', stream: 'https://mp3.rtvslo.si/rsi', page: 'https://siradio.si/si/', logo: 'si', bands: ['FM', 'DAB'] },
   { id: 'ognjisce', name: 'Radio Ognjišče', freq: '104.5 FM', style: 'Duhovna · informativna', group: 'Govorni', color: '#d28b35', stream: 'https://live.radio.si/ognjisce.mp3', page: 'https://siradio.si/ognjisce/', logo: 'ognjisce', bands: ['FM', 'DAB'] },
   { id: 'salomon', name: 'Radio Salomon', freq: '101.6 FM', style: 'Dance · elektronska', group: 'Dance', color: '#ca4eb5', stream: 'https://live.radio.si/Salomon', page: 'https://siradio.si/salomon/', logo: 'salomon', bands: ['FM', 'DAB'] },
   { id: 'veseljak', name: 'Radio Veseljak', freq: '94.9 FM', style: 'Slovenska narodno-zabavna', group: 'Domača', color: '#4fa05c', stream: 'https://live.radio.si/Veseljak', page: 'https://siradio.si/veseljak/', logo: 'veseljak', bands: ['FM', 'DAB'], streams: ['https://live.radio.si/Veseljak', 'http://195.95.158.131/Veseljak'] },
@@ -72,7 +72,7 @@ const SI_RADIO_STATIONS = [
   { id: 'hit', name: 'Radio Hit', freq: '90.2 FM', style: 'Domžale · pop hiti', group: 'Pop', color: '#d84a55', stream: 'https://live.radio.si/Hit', page: 'https://siradio.si/hit/', logo: 'hit', bands: ['FM'] },
   { id: 'aktual-kum', name: 'Radio Aktual Kum', freq: '98.1 FM', style: 'Zasavje · domači hiti', group: 'Domača', color: '#b4558a', stream: 'https://live.radio.si/AktualK', page: 'https://siradio.si/aktual-kum/', logo: 'aktual-kum', bands: ['FM', 'DAB'] },
   { id: 'net-maribor', name: 'Radio Net FM', freq: '100.2 FM', style: 'Maribor · glasba in novice', group: 'Pop', color: '#4177c7', stream: 'https://stream.radionet.si/stream.ogg', page: 'https://siradio.si/net-maribor/', logo: 'net-maribor', bands: ['FM', 'DAB'], streams: ['https://stream.radionet.si/stream.ogg', 'http://reflector.radionet.si:8000/stream.ogg'] },
-  { id: 'koper', name: 'Radio Koper', freq: '96.4 FM', style: 'Primorska · kultura in novice', group: 'Govorni', color: '#39a7a2', stream: 'https://mp3.rtvslo.si/rakp', page: 'https://siradio.si/koper/', logo: 'koper', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'koper', name: 'Radio Koper', freq: '96.4 FM', style: 'Primorska · kultura in novice', group: 'Govorni', color: '#39a7a2', stream: 'https://mp3.rtvslo.si/rakp', page: 'https://siradio.si/koper/', logo: 'koper', bands: ['FM', 'DAB'] },
   { id: 'stajerski', name: 'Štajerski val', freq: '93.7 FM', style: 'Štajerska · lokalni program', group: 'Pop', color: '#cf7635', stream: 'https://stream.stajerskival.si:8443/live', page: 'https://siradio.si/stajerski/', logo: 'stajerski', bands: ['FM', 'DAB'] },
   { id: 'celje', name: 'Radio Celje', freq: '95.1 FM', style: 'Celje · lokalni program', group: 'Pop', color: '#e24d52', stream: 'https://live.radio.si/Celje', page: 'https://siradio.si/celje/', logo: 'celje', bands: ['FM'] },
   { id: 'zeleni-val', name: 'Radio Zeleni val', freq: '93.1 FM', style: 'Osrednja Slovenija · domača', group: 'Domača', color: '#5d9b4f', stream: 'https://jurepeterka.radioca.st/stream/1/', page: 'https://siradio.si/zeleni-val/', logo: 'zeleni-val', bands: ['FM'] },
@@ -81,16 +81,16 @@ const SI_RADIO_STATIONS = [
   { id: 'bob', name: 'Radio 1 Rock', freq: '87.6 FM', style: 'Rock hiti', group: 'Rock', color: '#cf4e3e', stream: 'https://live.radio.si/Radio1Rock', page: 'https://siradio.si/bob/', logo: 'bob', bands: ['FM', 'DAB'] },
   { id: 'robin', name: 'Radio Robin', freq: '100.0 FM', style: 'Goriška · lokalni program', group: 'Pop', color: '#4386ba', stream: 'https://live.radio.si/Robin', page: 'https://siradio.si/robin/', logo: 'robin', bands: ['FM', 'DAB'] },
   { id: 'triglav', name: 'Radio Triglav', freq: '89.8 FM', style: 'Gorenjska · lokalni program', group: 'Pop', color: '#4b80bc', stream: 'https://live.radio.si/Triglav', page: 'https://siradio.si/triglav/', logo: 'triglav', bands: ['FM', 'DAB'] },
-  { id: 'maribor', name: 'Radio Maribor', freq: '93.1 FM', style: 'Štajerska · kultura in novice', group: 'Govorni', color: '#b84942', stream: 'https://mp3.rtvslo.si/rmb', page: 'https://siradio.si/maribor/', logo: 'maribor', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'maribor', name: 'Radio Maribor', freq: '93.1 FM', style: 'Štajerska · kultura in novice', group: 'Govorni', color: '#b84942', stream: 'https://mp3.rtvslo.si/rmb', page: 'https://siradio.si/maribor/', logo: 'maribor', bands: ['FM', 'DAB'] },
   { id: 'slovenske-gorice', name: 'Radio Slovenske gorice', freq: '96.4 FM', style: 'Lenart · lokalni program', group: 'Pop', color: '#509c5d', stream: 'https://live.radio.si/Toti-Lenart', page: 'https://siradio.si/slovenske-gorice/', logo: 'slovenske-gorice', bands: ['FM', 'DAB'] },
   { id: 'velenje', name: 'Radio Velenje', freq: '107.8 FM', style: 'Šaleška dolina · lokalni program', group: 'Pop', color: '#4995a7', stream: 'https://live.radio.si/Velenje', page: 'https://siradio.si/velenje/', logo: 'velenje', bands: ['FM'], streams: ['https://live.radio.si/Velenje', 'http://live.radio.si:8000/Velenje'] },
   { id: 'prlek', name: 'Radio Prlek', freq: '88.9 FM', style: 'Ormož · lokalni program', group: 'Pop', color: '#b78045', stream: 'http://86.61.68.81:8000/', page: 'https://siradio.si/prlek/', logo: 'prlek', bands: ['FM'] },
   { id: '94', name: 'Radio 94', freq: '97.8 FM', style: 'Notranjska · lokalni program', group: 'Pop', color: '#4599a0', stream: 'http://77.38.12.198:8000/radio94', page: 'https://siradio.si/94/', logo: '94', bands: ['FM', 'DAB'] },
   { id: 'mars', name: 'Radio Marš', freq: '95.9 FM', style: 'Maribor · neodvisni radio', group: 'Kultura', color: '#dc6746', stream: 'https://frekvenca.eu:8443/radiomars.mp3', page: 'https://siradio.si/mars/', logo: 'mars', bands: ['FM'], streams: ['https://frekvenca.eu:8443/radiomars.mp3', 'http://frekvenca.eu:8000/radiomars.mp3'] },
   { id: 'kranj', name: 'Radio Kranj', freq: '97.3 FM', style: 'Gorenjska · lokalni program', group: 'Pop', color: '#5287c7', stream: 'https://live.radio.si/Kranj', page: 'https://siradio.si/kranj/', logo: 'kranj', bands: ['FM', 'DAB'] },
-  { id: 'student', name: 'Radio Študent', freq: '89.3 FM', style: 'Kultura · glasba · študentski radio', group: 'Kultura', color: '#b88b3c', stream: 'https://kruljo.radiostudent.si:8001/hiq', page: 'https://siradio.si/student/', logo: 'student', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'student', name: 'Radio Študent', freq: '89.3 FM', style: 'Kultura · glasba · študentski radio', group: 'Kultura', color: '#b88b3c', stream: 'https://kruljo.radiostudent.si:8001/hiq', page: 'https://siradio.si/student/', logo: 'student', bands: ['FM', 'DAB'] },
   { id: 'sora', name: 'Radio Sora', freq: '91.1 FM', style: 'Škofja Loka · lokalni program', group: 'Pop', color: '#438c70', stream: 'https://stream.radio-sora.si:8001/radio-sora.mp3', page: 'https://siradio.si/sora/', logo: 'sora', bands: ['FM', 'DAB'], streams: ['https://stream.radio-sora.si:8001/radio-sora.mp3', 'http://radio-sora.si:8000/radio-sora.mp3'] },
-  { id: 'muravideki-magyar-ljubljana', name: 'Muravidéki Magyar Rádió', freq: '87.6 FM', style: 'Madžarski program · Pomurje', group: 'Govorni', color: '#4789b2', stream: 'https://mp3.rtvslo.si/mmr', page: 'https://siradio.si/muravideki-magyar-ljubljana/', logo: 'muravideki-magyar-ljubljana', logoFormat: 'svg', bands: ['FM', 'DAB'] },
+  { id: 'muravideki-magyar-ljubljana', name: 'Muravidéki Magyar Rádió', freq: '87.6 FM', style: 'Madžarski program · Pomurje', group: 'Govorni', color: '#4789b2', stream: 'https://mp3.rtvslo.si/mmr', page: 'https://siradio.si/muravideki-magyar-ljubljana/', logo: 'muravideki-magyar-ljubljana', bands: ['FM', 'DAB'] },
 ];
 const rid = () => Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
@@ -131,7 +131,7 @@ const confirmBox = (title, text) => modal(title, () => h('div', { class: 'note' 
 
 // ---------- State ----------
 const defaultDb = () => ({
-  library: [], liked: [], playlists: [], history: [], lyrics: {},
+  library: [], liked: [], playlists: [], history: [], lyrics: {}, podcasts: [],
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', vizColor: 'theme', vizHeight: 52, vizGlow: true, vizSmoothing: 0.72, preset: 'flat', skipIntro: 0, skipOutro: 0,
@@ -266,6 +266,8 @@ const audioEls = [$('#audio'), h('audio', { preload: 'auto' })];
 let audio = audioEls[0];
 const radioAudio = new Audio();
 radioAudio.preload = 'none';
+const podcastAudio = new Audio();
+podcastAudio.preload = 'metadata';
 let radioStartPending = false;
 let radioStartGeneration = 0;
 let playRequestId = 0;
@@ -323,6 +325,8 @@ function enterAccount(acc) {
   $('#volume').value = db.settings.volume;
   for (const el of audioEls) { el.volume = db.settings.volume / 100; el.playbackRate = db.settings.speed; }
   radioAudio.volume = db.settings.volume / 100;
+  podcastAudio.volume = db.settings.volume / 100;
+  podcastAudio.playbackRate = db.settings.speed;
   applyTheme();
   startParticles();
   updateAvatar();
@@ -602,10 +606,12 @@ function applyNormalize() {
 }
 function applySpeed() {
   for (const el of audioEls) { el.defaultPlaybackRate = db.settings.speed; el.playbackRate = db.settings.speed; }
+  podcastAudio.defaultPlaybackRate = db.settings.speed;
+  podcastAudio.playbackRate = db.settings.speed;
   yt?.setPlaybackRate?.(db.settings.speed);
 }
 function applyEq(hint) {
-  if (hint && ytActive()) toast('Izenačevalnik ne deluje pri YouTube skladbah – dodaj skladbo v Offline knjižnico.');
+  if (hint && cur && cur.type !== 'local') toast('Izenačevalnik deluje samo pri skladbah iz Offline knjižnice.');
   if (!eqNodes) return;
   for (const k of ['bass', 'mid', 'treble']) eqNodes[k].gain.value = Number(db.settings.eq[k]) || 0;
 }
@@ -615,13 +621,14 @@ let ytPlayers = [];
 let ytReady = null;
 const ytBlocked = new Set();
 const ytActive = () => !!cur && cur.type === 'yt';
-const activeAudio = () => cur?.type === 'radio' ? radioAudio : audio;
+const activeAudio = () => cur?.type === 'radio' ? radioAudio : cur?.type === 'podcast' ? podcastAudio : audio;
 const isPlaying = () => (ytActive() ? yt?.__st === 1 || yt?.__st === 3 : !!cur && !activeAudio().paused && !activeAudio().ended);
-const getPos = () => (!cur || cur.type === 'radio' ? 0 : ytActive() ? (yt?.getCurrentTime?.() || 0) : audio.currentTime || 0);
+const getPos = () => (!cur || cur.type === 'radio' ? 0 : ytActive() ? (yt?.getCurrentTime?.() || 0) : activeAudio().currentTime || 0);
 const getDur = () => {
   if (!cur || cur.type === 'radio') return 0;
   if (ytActive()) return yt?.getDuration?.() || 0;
-  return isFinite(audio.duration) ? audio.duration : cur.duration || 0;
+  const duration = activeAudio().duration;
+  return isFinite(duration) ? duration : cur.duration || 0;
 };
 
 function loadYT() {
@@ -713,6 +720,7 @@ function stopEngines() {
   radioStartPending = false;
   radioAudio.pause();
   for (const el of audioEls) el.pause();
+  podcastAudio.pause();
   for (const p of ytPlayers) p.pauseVideo?.();
 }
 async function playRadioStreams(track) {
@@ -752,11 +760,11 @@ async function playRadioStreams(track) {
     if (generation === radioStartGeneration) radioStartPending = false;
   }
 }
-const engineSeek = (sec) => { if (ytActive()) yt?.seekTo?.(sec, true); else if (cur?.type !== 'radio') audio.currentTime = sec; };
+const engineSeek = (sec) => { if (ytActive()) yt?.seekTo?.(sec, true); else if (cur?.type !== 'radio') activeAudio().currentTime = sec; };
 const enginePlay = () => {
   if (ytActive()) yt?.playVideo?.();
   else if (cur?.type === 'radio') playRadioStreams(cur);
-  else { audioCtx?.resume(); audio.play().catch(() => {}); }
+  else { if (cur?.type !== 'podcast') audioCtx?.resume(); activeAudio().play().catch(() => {}); }
 };
 const enginePause = () => {
   if (cur?.type === 'radio') { radioStartGeneration += 1; radioStartPending = false; }
@@ -814,6 +822,30 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
     radioAudio.volume = db.settings.volume / 100;
     return playRadioStreams(track);
   }
+  if (track.type === 'podcast') {
+    if (!navigator.onLine) { toast('Za poslušanje podcasta potrebuješ internetno povezavo.'); return false; }
+    if (!/^https:\/\//i.test(track.audioUrl || '')) { toast('Epizoda nima veljavne varne zvočne povezave.'); return false; }
+    if (!cross) {
+      stopEngines();
+      $('#yt-wrap').classList.remove('show');
+    }
+    podcastAudio.pause();
+    podcastAudio.removeAttribute('src');
+    podcastAudio.load();
+    podcastAudio.src = track.audioUrl;
+    podcastAudio.playbackRate = db.settings.speed;
+    podcastAudio.volume = db.settings.volume / 100;
+    try {
+      await waitForMediaMetadata(podcastAudio);
+      if (!isCurrentPlayRequest(requestId)) return false;
+      if (start) podcastAudio.currentTime = Math.min(start, Math.max(0, podcastAudio.duration - 1));
+      await podcastAudio.play();
+    } catch (error) {
+      if (isCurrentPlayRequest(requestId)) toast(error.message || 'Podcast epizode ni mogoče predvajati.');
+      return false;
+    }
+    return isCurrentPlayRequest(requestId);
+  }
   if (track.type === 'local') {
     if (!db.library.some((t) => t.id === track.id)) { toast('Skladba ni več v knjižnici.'); return false; }
     const outgoingLocal = cross && cur?.type === 'local';
@@ -832,10 +864,10 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
     try {
       await waitForMediaMetadata(el);
       if (!isCurrentPlayRequest(requestId)) {
-        if (el.getAttribute('src') === source) el.pause();
+        if (el.src.endsWith(source)) el.pause();
         return false;
       }
-      if (start) el.currentTime = Number.isFinite(el.duration) ? Math.min(start, Math.max(0, el.duration - 1)) : start;
+      if (start) el.currentTime = Math.min(start, Math.max(0, el.duration - 1));
       await audioCtx.resume();
       if (!isCurrentPlayRequest(requestId)) return false;
       await el.play();
@@ -844,7 +876,7 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
       return false;
     }
     if (!isCurrentPlayRequest(requestId)) {
-      if (el.getAttribute('src') === source) el.pause();
+      if (el.src.endsWith(source)) el.pause();
       return false;
     }
     audio = el;
@@ -905,6 +937,12 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
 for (const el of audioEls) {
   el.addEventListener('error', () => { if (el === audio && cur && cur.type === 'local' && el.src) toast('Skladbe ni mogoče predvajati.'); });
 }
+podcastAudio.addEventListener('ended', () => { if (cur?.type === 'podcast') onEnded(); });
+podcastAudio.addEventListener('play', () => { if (cur?.type === 'podcast') { updatePlayBtn(); jamBroadcast(); } });
+podcastAudio.addEventListener('pause', () => { if (cur?.type === 'podcast') { updatePlayBtn(); jamBroadcast(); } });
+podcastAudio.addEventListener('error', () => {
+  if (cur?.type === 'podcast' && podcastAudio.src) toast('Podcast epizode ni mogoče predvajati. Preveri povezavo ali poskusi drugo epizodo.');
+});
 radioAudio.addEventListener('error', () => {
   if (cur?.type === 'radio' && !radioStartPending) toast(`${cur.title}: radijske postaje trenutno ni mogoče doseči.`);
 });
@@ -990,7 +1028,10 @@ function playFrom(list, track) {
   // smart shuffle is only offered for queues started from a user-made playlist
   plQueue = view === 'playlists' && db.playlists.some((p) => p.id === viewArg);
   if (!plQueue && smart) setShuffleMode(shuffle ? 1 : 0);
-  if (jamGuest()) return jamCommand('play', { track: track.type === 'yt' ? track : null });
+  if (jamGuest()) {
+    const sharedTrack = ['yt', 'podcast'].includes(track.type) ? slimTrack(track) : null;
+    return jamCommand('play', { track: sharedTrack });
+  }
   playTrack(track, { queue: [...list] });
 }
 
@@ -1392,6 +1433,7 @@ const fadeLevel = (pos, dur, f, fadeIn) => (f > 0 && dur ? Math.max(0, Math.min(
 function setDeckLevel(deck, g) {
   g *= sleepMul;
   if (deck.type === 'yt') deck.p.setVolume?.(Math.round(db.settings.volume * g));
+  else if (deck.type === 'podcast') podcastAudio.volume = db.settings.volume / 100 * g;
   else if (deckGain.length) deckGain[audioEls.indexOf(deck.el)].gain.value = g;
 }
 async function startCrossfade(t) {
@@ -1402,7 +1444,7 @@ async function startCrossfade(t) {
   if (generation !== xfadeGeneration) return;
   if (!ok) {
     xfadeFailed = cur ? cur.id : '';
-    const outgoingEnded = cur?.type === 'yt' ? yt?.__st === 0 : cur?.type === 'local' && audio.ended;
+    const outgoingEnded = cur?.type === 'yt' ? yt?.__st === 0 : ['local', 'podcast'].includes(cur?.type) && activeAudio().ended;
     if (outgoingEnded) next(true);
   }
   xfadeBusy = false;
@@ -1414,12 +1456,15 @@ setInterval(() => {
   const pos = getPos();
   const rawDur = getDur();
   const dur = rawDur ? Math.max(0, rawDur - skipO) : 0;
-  if (seeking) return;
+  if (seeking || playRequestPending) return;
   if (loopA !== null && loopB !== null && !seeking && !jamGuest()) {
     if (pos >= loopB || pos < loopA - 0.5) seekTo(loopA);
     return;
   }
-  setDeckLevel(ytActive() ? { type: 'yt', p: yt } : { type: 'local', el: audio }, fadeLevel(pos - curStart, dur - curStart, f, true));
+  const currentDeck = ytActive()
+    ? { type: 'yt', p: yt }
+    : cur.type === 'podcast' ? { type: 'podcast' } : { type: 'local', el: audio };
+  setDeckLevel(currentDeck, fadeLevel(pos - curStart, dur - curStart, f, true));
   if (ghost) {
     const gp = ghost.type === 'yt' ? ghost.p.getCurrentTime?.() || 0 : ghost.el.currentTime;
     const gdRaw = ghost.type === 'yt' ? ghost.p.getDuration?.() || 0 : ghost.el.duration;
@@ -1429,12 +1474,12 @@ setInterval(() => {
     else setDeckLevel(ghost, fadeLevel(gp, gd, f, false));
   }
   if (radioOn() && cur.type === 'yt' && repeat === 'off' && !jamGuest() && queue.length - 1 - qIndex < 15 && radioFailedFor !== cur.id) radioFill();
-  if (!rawDur || xfadeBusy || playRequestPending || jamGuest() || repeat === 'one' || !isPlaying()) return;
-  if (f > 0 && dur > f * 2 && dur - pos <= f && xfadeFailed !== cur.id) {
+  if (!rawDur || xfadeBusy || jamGuest() || repeat === 'one' || !isPlaying()) return;
+  if (cur.type !== 'podcast' && f > 0 && dur > f * 2 && dur - pos <= f && xfadeFailed !== cur.id) {
     const t = pickNext(true);
-    if (t) startCrossfade(t);
+    if (t && t.type !== 'podcast') startCrossfade(t);
   }
-  if (skipO > 0 && dur - pos <= 0 && outroDone !== cur.id && rawDur > skipO * 2) {
+  if (!xfadeBusy && skipO > 0 && dur - pos <= 0 && outroDone !== cur.id && rawDur > skipO * 2) {
     outroDone = cur.id;
     next(true);
   }
@@ -1901,6 +1946,7 @@ $('#volume').addEventListener('input', () => {
   db.settings.volume = v;
   for (const el of audioEls) el.volume = v / 100;
   radioAudio.volume = v / 100;
+  podcastAudio.volume = v / 100;
   save();
 });
 
@@ -1939,7 +1985,7 @@ function trackRow(track, list, extra) {
     coverEl(track),
     h('div', { style: 'min-width:0' },
       h('div', {}, h('span', { class: 't', onclick: () => playFrom(list, track) }, track.title),
-        h('span', { class: 'badge' }, track.type === 'yt' ? 'YOUTUBE' : 'OFFLINE')),
+        h('span', { class: 'badge' }, track.type === 'yt' ? 'YOUTUBE' : track.type === 'podcast' ? 'PODCAST' : 'OFFLINE')),
       h('div', { class: 'a' }, track.artist)),
     h('div', { class: 'acts' },
       btn('+ vrsta', () => enqueue(track)),
@@ -2134,6 +2180,172 @@ async function inviteToPlaylist(pl) {
 
 // ---------- Views ----------
 const mixCache = {};
+let podcastSearch = { query: '', results: [], error: '', loading: false };
+let podcastSearchId = 0;
+const podcastEpisodesCache = new Map();
+function podcastEpisodeTracks(show, xml) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('RSS vir vsebuje neveljaven XML.');
+  const elements = Array.from(doc.getElementsByTagName('*'));
+  const items = elements.filter((element) => ['item', 'entry'].includes((element.localName || '').toLowerCase()));
+  const child = (element, names) => {
+    const found = Array.from(element.children).find((part) => names.includes((part.localName || '').toLowerCase()));
+    return found || null;
+  };
+  const text = (element, names) => child(element, names)?.textContent?.trim() || '';
+  const episodes = [];
+  const seen = new Set();
+  for (const item of items) {
+    const enclosure = Array.from(item.children).find((part) => {
+      const name = (part.localName || '').toLowerCase();
+      const rel = part.getAttribute('rel');
+      const type = part.getAttribute('type') || '';
+      return name === 'enclosure' || (name === 'link' && rel === 'enclosure' && (!type || type.startsWith('audio/')));
+    });
+    const audioUrl = enclosure?.getAttribute('url') || enclosure?.getAttribute('href') || '';
+    let safeAudioUrl = '';
+    try {
+      const parsed = new URL(audioUrl);
+      if (parsed.protocol === 'https:') safeAudioUrl = parsed.href;
+    } catch {}
+    if (!safeAudioUrl || seen.has(safeAudioUrl)) continue;
+    seen.add(safeAudioUrl);
+    const title = text(item, ['title']) || 'Neimenovana epizoda';
+    const guid = text(item, ['guid', 'id']) || safeAudioUrl;
+    const durationText = text(item, ['duration']);
+    const durationParts = durationText.split(':').map(Number);
+    const duration = durationParts.every(Number.isFinite)
+      ? durationParts.reduce((total, part) => total * 60 + part, 0)
+      : 0;
+    const date = text(item, ['pubdate', 'published', 'updated']);
+    episodes.push({
+      id: `podcast:${show.id}:${encodeURIComponent(guid).slice(0, 300)}`,
+      type: 'podcast',
+      audioUrl: safeAudioUrl,
+      title,
+      artist: show.artist || show.title,
+      cover: show.cover || show.artwork || '',
+      duration,
+      publishedAt: date,
+      showId: String(show.id),
+    });
+    if (episodes.length >= 60) break;
+  }
+  return episodes;
+}
+
+async function searchPodcasts(query) {
+  const requestId = ++podcastSearchId;
+  if (!query) {
+    podcastSearch = { query: '', results: [], error: '', loading: false };
+    render();
+    return;
+  }
+  podcastSearch = { query, results: [], error: '', loading: true };
+  render();
+  try {
+    const results = await window.gmajna.podcastSearch(query);
+    if (requestId !== podcastSearchId) return;
+    podcastSearch.results = results;
+    if (!results.length) podcastSearch.error = 'Ni rezultatov za ta iskalni niz.';
+  } catch (error) {
+    if (requestId !== podcastSearchId) return;
+    podcastSearch.error = `Iskanje podcastov ni uspelo: ${error.message}`;
+  } finally {
+    if (requestId === podcastSearchId) {
+      podcastSearch.loading = false;
+      render();
+    }
+  }
+}
+
+function subscribePodcast(show) {
+  if (db.podcasts.some((item) => String(item.id) === String(show.id))) return;
+  db.podcasts.push({
+    id: String(show.id),
+    title: show.title,
+    artist: show.artist,
+    cover: show.cover || show.artwork || '',
+    artwork: show.artwork || show.cover || '',
+    feedUrl: show.feedUrl,
+    url: show.url || '',
+    episodeCount: Number(show.episodeCount) || 0,
+    genre: show.genre || '',
+  });
+  save();
+  renderAll();
+  toast('Naročen si na podcast.');
+}
+
+function openPodcast(show) {
+  view = 'podcast-show';
+  viewArg = String(show.id);
+  renderAll();
+}
+
+function podcastCard(show, subscribed = false) {
+  const item = { ...show, cover: show.cover || show.artwork || '' };
+  return h('div', {
+    class: 'card podcast-card',
+    onclick: () => openPodcast(item),
+    title: item.title,
+  },
+  coverEl(item, 'podcast-cover'),
+  h('div', { class: 'ct' }, item.title),
+  h('div', { class: 'ca' }, item.artist || item.genre || 'Podcast'),
+  h('button', {
+    class: 'podcast-subscribe',
+    onclick: (event) => {
+      event.stopPropagation();
+      if (subscribed) {
+        db.podcasts = db.podcasts.filter((podcast) => String(podcast.id) !== String(item.id));
+        save();
+        renderAll();
+        toast('Podcast je odstranjen iz knjižnice.');
+      } else subscribePodcast(item);
+    },
+  }, subscribed ? 'Odjavi se' : 'Naroči se'));
+}
+
+function podcastShowView(show) {
+  const cachedEpisodes = podcastEpisodesCache.get(String(show.id));
+  const content = h('div', { class: 'note' }, cachedEpisodes ? '' : 'Nalaganje epizod …');
+  const renderEpisodes = (episodes) => content.replaceChildren(
+    episodes.length
+      ? h('div', { class: 'toolbar' }, btn('▶ Predvajaj epizode', () => playFrom(episodes, episodes[0]), 'btn'))
+      : h('div', { class: 'note' }, 'Ta podcast še nima javno dostopnih epizod.'),
+    ...trackRows(episodes, 'Ta podcast še nima javno dostopnih epizod.'),
+  );
+  if (cachedEpisodes) renderEpisodes(cachedEpisodes);
+  else {
+    window.gmajna.podcastEpisodes(show.feedUrl).then((xml) => {
+      const episodes = podcastEpisodeTracks(show, xml);
+      podcastEpisodesCache.set(String(show.id), episodes);
+      if (view === 'podcast-show' && viewArg === String(show.id)) renderEpisodes(episodes);
+    }).catch((error) => {
+      if (view === 'podcast-show' && viewArg === String(show.id)) {
+        content.replaceChildren(h('div', { class: 'note' }, `Epizod ni bilo mogoče naložiti: ${error.message}`));
+      }
+    });
+  }
+  return [
+    hero(h('h2', {}, show.title),
+      h('div', { class: 'note' }, `${show.artist || 'Podcast'}${show.episodeCount ? ` · ${show.episodeCount} epizod` : ''}`),
+      h('div', { class: 'toolbar' },
+        btn(db.podcasts.some((item) => String(item.id) === String(show.id)) ? 'Odjavi se' : 'Naroči se', () => {
+          if (db.podcasts.some((item) => String(item.id) === String(show.id))) {
+            db.podcasts = db.podcasts.filter((item) => String(item.id) !== String(show.id));
+            save();
+            renderAll();
+            toast('Podcast je odstranjen iz knjižnice.');
+          } else subscribePodcast(show);
+        }, 'btn sec'),
+        show.url ? btn('Odpri v Apple Podcasts', () => window.gmajna.openExternal(show.url), 'btn sec') : null)),
+    h('h3', {}, 'Epizode'),
+    content,
+  ];
+}
+
 const MOODS = [
   ['Poživitev', 'energetic upbeat songs'], ['Sproščanje', 'relaxing songs'],
   ['Dobro počutje', 'feel good happy songs'], ['Vadba', 'workout gym songs'],
@@ -2291,7 +2503,7 @@ function radioStationMark(station, player = false) {
 }
 
 function radioStationLogoUrl(station) {
-  return station?.logo ? `img/radio/${station.logo}.${station.logoFormat || 'png'}` : '';
+  return station?.logo ? `img/radio/${station.logo}.png` : '';
 }
 
 function radioStationCards() {
@@ -2320,6 +2532,60 @@ function radioStationCards() {
 }
 
 const views = {
+  podcasts() {
+    const topics = [
+      ['Slovenski podcasti', 'slovenski podcast'],
+      ['Novice', 'news podcast'],
+      ['Zgodovina', 'history podcast'],
+      ['Znanost', 'science podcast'],
+      ['Resnične zgodbe', 'true crime podcast'],
+      ['Komedija', 'comedy podcast'],
+    ];
+    const searchInput = h('input', {
+      class: 'podcast-search',
+      type: 'search',
+      placeholder: 'Poišči podcast …',
+      value: podcastSearch.query,
+      'aria-label': 'Poišči podcast',
+      oninput: (event) => { podcastSearch.query = event.target.value; },
+      onkeydown: (event) => {
+        if (event.key === 'Enter') searchPodcasts(podcastSearch.query.trim());
+      },
+    });
+    return [
+      hero(h('h2', {}, 'Podcasti'),
+        h('div', { class: 'note' }, 'Poišči oddaje v katalogu in poslušaj njihove najnovejše epizode.')),
+      h('div', { class: 'toolbar podcast-toolbar' },
+        searchInput,
+        btn('Išči', () => searchPodcasts(podcastSearch.query.trim()), 'btn')),
+      h('h3', {}, 'Brskaj po temah'),
+      h('div', { class: 'chips podcast-topics' }, topics.map(([label, query]) => h('button', {
+        class: 'chip',
+        onclick: () => { podcastSearch.query = label; searchPodcasts(query); },
+      }, label))),
+      podcastSearch.loading ? h('div', { class: 'note' }, 'Iščem podcaste …') : null,
+      !podcastSearch.query && !podcastSearch.loading
+        ? h('div', { class: 'note' }, 'Vpiši ime podcasta in pritisni Enter.') : null,
+      podcastSearch.error ? h('div', { class: 'note' }, podcastSearch.error) : null,
+      podcastSearch.results.length ? h('h3', {}, 'Rezultati iskanja') : null,
+      podcastSearch.results.length
+        ? h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => podcastCard(show,
+          db.podcasts.some((item) => String(item.id) === String(show.id)))))
+        : null,
+      h('h3', {}, 'Tvoji podcasti'),
+      db.podcasts.length
+        ? h('div', { class: 'grid podcast-grid' }, db.podcasts.map((show) => podcastCard(show, true)))
+        : h('div', { class: 'note' }, 'Še nisi naročen na noben podcast. Poišči oddajo zgoraj.'),
+      h('div', { class: 'podcast-credit' }, 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'),
+    ];
+  },
+  'podcast-show'() {
+    const show = db.podcasts.find((item) => String(item.id) === String(viewArg))
+      || podcastSearch.results.find((item) => String(item.id) === String(viewArg));
+    return show
+      ? podcastShowView(show)
+      : [hero(h('h2', {}, 'Podcast ni na voljo')), btn('Nazaj na podcaste', () => { view = 'podcasts'; viewArg = null; renderAll(); }, 'btn sec')];
+  },
   radio() {
     const mixes = [...SPECIAL_MIXES, ...MOODS.map(moodMix)];
     const groups = [
@@ -2851,6 +3117,7 @@ function renderSidebar() {
   $('#sidebar').replaceChildren(
     h('div', { class: 'side-head' }, h('span', {}, 'Meni')),
     makeNav('home', ICON.home, 'transparent', 'Domov', 'Priporočeno'),
+    nav('podcasts', '🎙', 'linear-gradient(135deg,#5b3b91,#2f2449)', 'Podcasti', `${db.podcasts.length} naročenih`),
     nav('radio', '◉', 'transparent', 'Radio', 'Razpoloženjski miksi'),
     makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo'),
     h('div', { class: 'side-head' }, h('span', {}, 'Tvoja knjižnica')),
@@ -2994,7 +3261,7 @@ function drawFxMenu() {
     h('div', { class: 'fxsec' }, 'Prehodi'),
     row('Crossfade', ...slider(0, 12, 1, () => s.fade, (v) => { s.fade = v; }, ' s')),
     h('div', { class: 'fxsec' }, 'Izenačevalnik (samo uvožene datoteke)'),
-    ...(cur && cur.type !== 'local' ? [h('div', { class: 'fxnote2' }, 'Trenutna skladba je z YouTuba – izenačevalnik deluje samo pri offline skladbah.')] : []),
+    ...(cur && cur.type !== 'local' ? [h('div', { class: 'fxnote2' }, 'Izenačevalnik deluje samo pri skladbah iz Offline knjižnice.')] : []),
     row('Predloga', select([...Object.entries(PRESETS).map(([k, p]) => [k, p.label]), ['', 'Po meri']], () => s.preset || '', (k) => {
       const p = PRESETS[k];
       if (!p) { s.preset = ''; return; }
@@ -3203,7 +3470,9 @@ const jam = {
   controlAllowed: false, members: [], connected: false,
 };
 const jamGuest = () => !!jam.room && !jam.isHost;
-const slimTrack = (t) => (t.type === 'yt' ? t : { id: t.id, type: 'local', title: t.title, artist: t.artist });
+const slimTrack = (t) => (t.type === 'yt' ? t : t.type === 'podcast'
+  ? { id: t.id, type: 'podcast', audioUrl: t.audioUrl, title: t.title, artist: t.artist, cover: t.cover || '', duration: t.duration || 0 }
+  : { id: t.id, type: 'local', title: t.title, artist: t.artist });
 const refreshJam = () => { if (account) { renderSidebar(); if (view === 'jam') render(); } };
 const pendingJamInvites = new Map();
 const processingJamInvites = new Set();
@@ -3383,6 +3652,27 @@ function jamCommand(cmd, payload = {}) {
 }
 
 function cleanWeb(t) {
+  if (t?.type === 'podcast') {
+    let audioUrl;
+    try {
+      const url = new URL(String(t.audioUrl || ''));
+      const host = url.hostname.toLowerCase();
+      if (url.protocol !== 'https:' || url.username || url.password || url.port
+          || /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host.includes(':')
+          || ['localhost', '127.0.0.1', '[::1]'].includes(host)
+          || host.endsWith('.localhost') || host.endsWith('.local')) return null;
+      audioUrl = url.href;
+    } catch { return null; }
+    return {
+      id: String(t.id || '').slice(0, 500) || `podcast:${audioUrl}`,
+      type: 'podcast',
+      audioUrl,
+      title: String(t.title || '').slice(0, 200),
+      artist: String(t.artist || '').slice(0, 200),
+      cover: typeof t.cover === 'string' && t.cover.startsWith('https://') ? t.cover.slice(0, 2048) : '',
+      duration: Math.max(0, Number(t.duration) || 0),
+    };
+  }
   if (!t || t.type !== 'yt' || !/^[\w-]{11}$/.test(t.videoId || '')) return null;
   return {
     id: `yt:${t.videoId}`, type: 'yt', videoId: t.videoId,

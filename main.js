@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, globalShortcut, shell, session, safeStorage, nativeImage } = require('electron');
 const http = require('http');
+const { isIP } = require('net');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -415,6 +416,65 @@ ipcMain.handle('yt:videoSearch', async (_e, query) => {
     }
   }
   return out;
+});
+
+ipcMain.handle('podcast:search', async (_e, query) => {
+  const term = String(query || '').trim().slice(0, 160);
+  if (!term) return [];
+  const url = new URL('https://itunes.apple.com/search');
+  url.search = new URLSearchParams({ term, media: 'podcast', entity: 'podcast', limit: '30', country: 'SI' });
+  const response = await fetch(url, {
+    headers: { Accept: 'application/json', 'User-Agent': 'Rythmify/0.6' },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) throw new Error(`Apple Podcasts ${response.status}`);
+  const data = await response.json();
+  const isSafeFeed = (value) => {
+    try {
+      const feed = new URL(value);
+      return feed.protocol === 'https:' && !feed.username && !feed.password && !feed.port
+        && !isIP(feed.hostname)
+        && !['localhost', '127.0.0.1', '[::1]'].includes(feed.hostname)
+        && !feed.hostname.endsWith('.localhost') && !feed.hostname.endsWith('.local');
+    } catch { return false; }
+  };
+  return (data.results || []).filter((item) => {
+    return !!item.collectionId && isSafeFeed(item.feedUrl);
+  }).map((item) => ({
+    id: String(item.collectionId),
+    title: String(item.collectionName || '').slice(0, 300),
+    artist: String(item.artistName || '').slice(0, 200),
+    artwork: String(item.artworkUrl600 || item.artworkUrl100 || ''),
+    feedUrl: item.feedUrl,
+    url: String(item.collectionViewUrl || ''),
+    episodeCount: Number(item.trackCount) || 0,
+    genre: String(item.primaryGenreName || ''),
+  }));
+});
+
+ipcMain.handle('podcast:episodes', async (_e, feedUrl) => {
+  let url;
+  try { url = new URL(String(feedUrl || '')); }
+  catch { throw new Error('Neveljavna RSS povezava podcasta.'); }
+  if (url.protocol !== 'https:' || url.username || url.password || url.port || isIP(url.hostname)
+      || ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+      || url.hostname.endsWith('.localhost') || url.hostname.endsWith('.local')) {
+    throw new Error('RSS vir mora uporabljati varen HTTPS naslov.');
+  }
+  const response = await fetch(url, {
+    headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok) throw new Error(`RSS vir ${response.status}`);
+  const finalUrl = new URL(response.url);
+  if (finalUrl.protocol !== 'https:' || isIP(finalUrl.hostname)
+      || ['localhost', '127.0.0.1', '[::1]'].includes(finalUrl.hostname)
+      || finalUrl.hostname.endsWith('.localhost') || finalUrl.hostname.endsWith('.local')) {
+    throw new Error('RSS vir se je preusmeril na nevarno povezavo.');
+  }
+  const xml = await response.text();
+  if (xml.length > 6 * 1024 * 1024) throw new Error('RSS vir je prevelik za obdelavo.');
+  return xml;
 });
 
 // "Download": copy user-owned/licensed audio files into the offline cache.

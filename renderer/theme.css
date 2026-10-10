@@ -64,6 +64,12 @@ h3{margin:26px 0 12px;font-size:22px;font-weight:700}
 .card{position:relative;background:var(--panel2);border-radius:8px;padding:14px;cursor:pointer;transition:background .2s}
 .card:hover{background:var(--hover)}
 .card .cover{width:100%;aspect-ratio:1;border-radius:6px;object-fit:cover;box-shadow:0 8px 24px #0006}
+.podcast-toolbar .podcast-search{flex:1;max-width:640px}
+.podcast-card{min-width:0}
+.podcast-card .podcast-cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;box-shadow:0 8px 24px #0006}
+.podcast-subscribe{margin-top:12px;padding:7px 14px;border:1px solid #ffffff55;border-radius:18px;background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.podcast-subscribe:hover{border-color:var(--text);background:#ffffff12}
+.podcast-credit{margin-top:24px;color:var(--muted);font-size:12px}
 .card .ct{font-weight:700;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .ca{color:var(--muted);font-size:13px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .playfab{position:absolute;right:20px;top:calc(100% - 100px);width:44px;height:44px;border-radius:50%;background:var(--accent);color:#000;border:0;font-size:18px;opacity:0;transform:translateY(8px);transition:.2s;cursor:pointer;box-shadow:0 8px 16px #0006}

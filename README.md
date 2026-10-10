@@ -4,6 +4,8 @@ Namizni Electron predvajalnik. Iskanje uporablja neuradni YouTube Music InnerTub
 
 Zavihek **Slovenske postaje** predvaja 43 slovenskih spletnih radijskih tokov, s filtri za FM, DAB in zvrstmi. Seznam, frekvence, tokovi in PNG-logotipi so povzeti po [SIradio.si](https://siradio.si/); uradni seznam DAB-programov je na [dab.si](https://dab.si/programi). Aplikacija predvaja internetne tokove, ne sprejema radijskega signala. Programi DAB brez javnega spletnega toka zato niso predvajani v aplikaciji.
 
+Zavihek **Podcasti** išče oddaje v javnem katalogu Apple Podcasts ter bere epizode iz RSS-virov izdajateljev. Naročene oddaje se shranijo v uporabnikov profil; epizode se predvajajo prek povezav, ki jih objavi izdajatelj, in niso prenesene za poslušanje brez povezave.
+
 Zagon: npm start
 
 ## Namestitveni program in samodejne posodobitve
