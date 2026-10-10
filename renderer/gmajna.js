@@ -2650,6 +2650,17 @@ const views = {
         !podcastSearch.query && !podcastSearch.loading
           ? h('div', { class: 'podcast-hint' }, 'Vpiši ime podcasta in pritisni Enter.') : null,
         podcastSearch.error ? h('div', { class: 'podcast-error' }, podcastSearch.error) : null),
+      podcastSearch.query && !podcastSearch.loading ? h('section', { class: 'podcast-section podcast-search-results' },
+        h('h3', {}, podcastSearch.source === 'youtube' ? 'Epizode na YouTubu' : 'Rezultati iskanja'),
+        podcastSearch.results.length
+          ? podcastSearch.source === 'youtube'
+            ? h('div', { class: 'podcast-episode-results' },
+              ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.'))
+            : h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
+              const subscribed = db.podcasts.some((item) => String(item.id) === String(show.id));
+              return podcastCard(show, subscribed);
+            }))
+          : h('div', { class: 'podcast-empty' }, 'Ni rezultatov za ta iskalni niz.')) : null,
       h('section', { class: 'podcast-section podcast-suggestions' },
         h('h3', {}, 'Priporočila z YouTuba'),
         podcastSuggestions.status === 'loading'
@@ -2661,15 +2672,6 @@ const views = {
           h('div', { class: 'grid podcast-grid' }, section.tracks.map((track) => cardEl(track, section.tracks))))),
         podcastSuggestions.status === 'loaded' && !podcastSuggestions.sections.length && !podcastSuggestions.error
           ? h('div', { class: 'podcast-empty' }, 'Trenutno ni priporočil. Poskusi iskanje na YouTubu.') : null),
-      podcastSearch.results.length ? h('section', { class: 'podcast-section' },
-        h('h3', {}, podcastSearch.source === 'youtube' ? 'Epizode na YouTubu' : 'Rezultati iskanja'),
-        podcastSearch.source === 'youtube'
-          ? h('div', { class: 'podcast-episode-results' },
-            ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.'))
-          : h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
-          const subscribed = db.podcasts.some((item) => String(item.id) === String(show.id));
-          return podcastCard(show, subscribed);
-        }))) : null,
       h('section', { class: 'podcast-section' },
         h('h3', {}, 'Tvoji podcasti'),
         db.podcasts.length
