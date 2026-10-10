@@ -44,28 +44,32 @@ const ICON = {
 const SI_RADIO_STATIONS = [
   { id: 'val202', name: 'Val 202', freq: '98.9 FM', style: 'Pop · rock · aktualno', group: 'Pop', color: '#f07043', stream: 'https://mp3.rtvslo.si/val202', page: 'https://siradio.si/val202/', logo: 'val202', bands: ['FM', 'DAB'] },
   { id: 'ena', name: 'Radio 1', freq: '89.7 FM', style: 'Največji hiti', group: 'Pop', color: '#ee4266', stream: 'https://live.radio.si/Radio1', page: 'https://siradio.si/ena/', logo: 'ena', bands: ['FM', 'DAB'] },
-  { id: 'aktual', name: 'Radio Aktual', freq: '100.2 FM', style: 'Slovenski in domači hiti', group: 'Domača', color: '#6e5be8', stream: 'https://live.radio.si/Aktual', page: 'https://siradio.si/aktual/', logo: 'aktual', bands: ['FM', 'DAB'] },
-  { id: 'city', name: 'Radio City', freq: '100.8 FM', style: 'Maribor · hiti in humor', group: 'Pop', color: '#e2a533', stream: 'https://stream1.radiocity.si/CityMp3128.mp3', page: 'https://siradio.si/city/', logo: 'city', bands: ['FM', 'DAB'] },
-  { id: 'center', name: 'Radio Center', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'] },
+  { id: 'frajer', name: 'Radio Frajer', freq: 'Spletni radio', style: 'Domaci in tuji hiti', group: 'Domaca', color: '#cf5b47', stream: 'https://live.radio.si/Frajer', page: 'https://siradio.si/radio-frajer/', logo: 'radio-frajer', bands: ['DAB'], streams: ['https://live.radio.si/Frajer'] },
+  { id: 'juboks', name: 'Radio Juboks', freq: 'DAB+', style: 'Domaci in tuji hiti � nostalgija', group: 'DAB', color: '#d4a63c', stream: 'https://stream2.nextmedia.si/hls/jub/live.m3u8', page: 'https://www.juboks.si/live/juboks', logo: 'juboks', bands: ['DAB'], streams: ['https://stream2.nextmedia.si/hls/jub/live.m3u8', 'https://stream.nextmedia.si/proxy/juboks_1?mp=/juboks?uid=jubweb'] },
+  { id: 'center-x', name: 'Radio Center X', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
+  { id: 'radio80', name: 'Radio 1 80-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 80-ih', group: '80-ta', color: '#d47e39', stream: 'https://radio.si/Radio80', page: 'https://radio80.si/', logo: 'radio80', bands: ['DAB'], streams: ['https://radio.si/Radio80'] },
+  { id: 'radio90', name: 'Radio 1 90-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 90-ih', group: '90-ta', color: '#5c77bd', stream: 'https://radio.si/Radio90-v-zivo', page: 'https://www.radio1.si/', logo: 'ena', bands: ['DAB'], streams: ['https://radio.si/Radio90-v-zivo'] },  { id: 'aktual', name: 'Radio Aktual', freq: '100.2 FM', style: 'Slovenski in domači hiti', group: 'Domača', color: '#6e5be8', stream: 'https://live.radio.si/Aktual', page: 'https://siradio.si/aktual/', logo: 'aktual', bands: ['FM', 'DAB'] },
+  { id: 'city', name: 'Radio City', freq: '100.8 FM', style: 'Maribor · hiti in humor', group: 'Pop', color: '#e2a533', stream: 'https://stream1.radiocity.si/CityMp3128.mp3', page: 'https://siradio.si/city/', logo: 'city', bands: ['FM', 'DAB'], streams: ['https://stream1.radiocity.si/CityMp3128.mp3', 'http://82.149.22.34:8000/CityMp364mono.mp3'] },
+  { id: 'center', name: 'Radio Center', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
   { id: 'capris', name: 'Radio Capris', freq: '91.7 FM', style: 'Primorska · pop hiti', group: 'Pop', color: '#3286e8', stream: 'https://stream.exit.si/live', page: 'https://siradio.si/capris/', logo: 'capris', bands: ['FM', 'DAB'] },
   { id: 'ars', name: 'Radio Ars', freq: '96.5 FM', style: 'Kultura · umetnost · klasika', group: 'Kultura', color: '#8a6cb8', stream: 'https://mp3.rtvslo.si/ars', page: 'https://siradio.si/ars/', logo: 'ars', bands: ['FM', 'DAB'] },
   { id: 'prvi', name: 'Radio Prvi', freq: '91.8 FM', style: 'Informacije · pogovori', group: 'Govorni', color: '#5184c5', stream: 'https://mp3.rtvslo.si/ra1', page: 'https://siradio.si/prvi/', logo: 'prvi', bands: ['FM', 'DAB'] },
   { id: 'si', name: 'Radio Si', freq: '91.9 FM', style: 'Slovenia International', group: 'Pop', color: '#36a8a0', stream: 'https://mp3.rtvslo.si/rsi', page: 'https://siradio.si/si/', logo: 'si', bands: ['FM', 'DAB'] },
   { id: 'ognjisce', name: 'Radio Ognjišče', freq: '104.5 FM', style: 'Duhovna · informativna', group: 'Govorni', color: '#d28b35', stream: 'https://live.radio.si/ognjisce.mp3', page: 'https://siradio.si/ognjisce/', logo: 'ognjisce', bands: ['FM', 'DAB'] },
   { id: 'salomon', name: 'Radio Salomon', freq: '101.6 FM', style: 'Dance · elektronska', group: 'Dance', color: '#ca4eb5', stream: 'https://live.radio.si/Salomon', page: 'https://siradio.si/salomon/', logo: 'salomon', bands: ['FM', 'DAB'] },
-  { id: 'veseljak', name: 'Radio Veseljak', freq: '94.9 FM', style: 'Slovenska narodno-zabavna', group: 'Domača', color: '#4fa05c', stream: 'https://live.radio.si/Veseljak', page: 'https://siradio.si/veseljak/', logo: 'veseljak', bands: ['FM', 'DAB'] },
-  { id: 'krka', name: 'Radio Krka', freq: '106.6 FM', style: 'Dolenjska · pop hiti', group: 'Pop', color: '#d95e43', stream: 'https://live.radio.si/Krka', page: 'https://siradio.si/krka/', logo: 'krka', bands: ['FM', 'DAB'] },
+  { id: 'veseljak', name: 'Radio Veseljak', freq: '94.9 FM', style: 'Slovenska narodno-zabavna', group: 'Domača', color: '#4fa05c', stream: 'https://live.radio.si/Veseljak', page: 'https://siradio.si/veseljak/', logo: 'veseljak', bands: ['FM', 'DAB'], streams: ['https://live.radio.si/Veseljak', 'http://195.95.158.131/Veseljak'] },
+  { id: 'krka', name: 'Radio Krka', freq: '106.6 FM', style: 'Dolenjska · pop hiti', group: 'Pop', color: '#d95e43', stream: 'https://live.radio.si/Krka', page: 'https://siradio.si/krka/', logo: 'krka', bands: ['FM', 'DAB'], streams: ['https://live.radio.si/Krka', 'http://84.52.138.44/Krka'] },
   { id: 'sraka', name: 'Radio Sraka', freq: '94.6 FM', style: 'Dolenjska · lokalni program', group: 'Pop', color: '#bc4c62', stream: 'https://sraka.siradiostream.net/', page: 'https://siradio.si/sraka/', logo: 'sraka', bands: ['FM', 'DAB'] },
   { id: 'ptuj', name: 'Radio Ptuj', freq: '89.8 FM', style: 'Štajerska · domača glasba', group: 'Domača', color: '#e18b36', stream: 'https://live.radio.si/Ptuj', page: 'https://siradio.si/ptuj/', logo: 'ptuj', bands: ['FM', 'DAB'] },
-  { id: 'rogla', name: 'Radio Rogla', freq: '89.4 FM', style: 'Štajerska · pop in domača', group: 'Domača', color: '#6ba647', stream: 'https://rogla.siradiostream.net/stream/1/', page: 'https://siradio.si/rogla/', logo: 'rogla', bands: ['FM', 'DAB'] },
+  { id: 'rogla', name: 'Radio Rogla', freq: '89.4 FM', style: 'Štajerska · pop in domača', group: 'Domača', color: '#6ba647', stream: 'https://rogla.siradiostream.net/stream/1/', page: 'https://siradio.si/rogla/', logo: 'rogla', bands: ['FM', 'DAB'], streams: ['https://rogla.siradiostream.net/stream/1/', 'http://193.105.67.24:8010/stream/1/'] },
   { id: 'maxi', name: 'Radio Maxi', freq: '90.0 FM', style: 'Prlekija · pop hiti', group: 'Pop', color: '#5380b9', stream: 'https://live.radio.si/Maxi', page: 'https://siradio.si/maxi/', logo: 'maxi', bands: ['FM', 'DAB'] },
   { id: 'murski-val', name: 'Murski val', freq: '94.6 FM', style: 'Pomurje · lokalni program', group: 'Pop', color: '#398c6a', stream: 'https://stream.murskival.si', page: 'https://siradio.si/murski-val/', logo: 'murski-val', bands: ['FM', 'DAB'] },
   { id: 'koroski', name: 'Koroški radio', freq: '97.2 FM', style: 'Koroška · lokalni program', group: 'Pop', color: '#487bb2', stream: 'https://live.radio.si/Koroski', page: 'https://siradio.si/koroski/', logo: 'koroski', bands: ['FM', 'DAB'] },
-  { id: 'ekspres', name: 'Radio Ekspres', freq: '106.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#7758ba', stream: 'https://stream.nextmedia.si/proxy/ekspres1?mp=/stream', page: 'https://siradio.si/ekspres/', logo: 'ekspres', bands: ['FM', 'DAB'] },
-  { id: 'antena', name: 'Radio Antena', freq: '105.2 FM', style: 'Pop hiti · Ljubljana', group: 'Pop', color: '#eb8d30', stream: 'https://live.radio.si/Antena', page: 'https://siradio.si/antena/', logo: 'antena', bands: ['FM', 'DAB'] },
+  { id: 'ekspres', name: 'Radio Ekspres', freq: '106.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#7758ba', stream: 'https://stream.nextmedia.si/proxy/ekspres1?mp=/stream', page: 'https://siradio.si/ekspres/', logo: 'ekspres', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/ekspres1?mp=/stream', 'http://stream2.radioekspres.si:8016/stream/1/'] },
+  { id: 'antena', name: 'Radio Antena', freq: '105.2 FM', style: 'Pop hiti · Ljubljana', group: 'Pop', color: '#eb8d30', stream: 'https://live.radio.si/Antena', page: 'https://siradio.si/antena/', logo: 'antena', bands: ['FM', 'DAB'], streams: ['https://live.radio.si/Antena', 'http://live.radioantena.si/Antena'] },
   { id: 'hit', name: 'Radio Hit', freq: '90.2 FM', style: 'Domžale · pop hiti', group: 'Pop', color: '#d84a55', stream: 'https://live.radio.si/Hit', page: 'https://siradio.si/hit/', logo: 'hit', bands: ['FM'] },
   { id: 'aktual-kum', name: 'Radio Aktual Kum', freq: '98.1 FM', style: 'Zasavje · domači hiti', group: 'Domača', color: '#b4558a', stream: 'https://live.radio.si/AktualK', page: 'https://siradio.si/aktual-kum/', logo: 'aktual-kum', bands: ['FM', 'DAB'] },
-  { id: 'net-maribor', name: 'Radio Net FM', freq: '100.2 FM', style: 'Maribor · glasba in novice', group: 'Pop', color: '#4177c7', stream: 'https://stream.radionet.si/stream.ogg', page: 'https://siradio.si/net-maribor/', logo: 'net-maribor', bands: ['FM', 'DAB'] },
+  { id: 'net-maribor', name: 'Radio Net FM', freq: '100.2 FM', style: 'Maribor · glasba in novice', group: 'Pop', color: '#4177c7', stream: 'https://stream.radionet.si/stream.ogg', page: 'https://siradio.si/net-maribor/', logo: 'net-maribor', bands: ['FM', 'DAB'], streams: ['https://stream.radionet.si/stream.ogg', 'http://reflector.radionet.si:8000/stream.ogg'] },
   { id: 'koper', name: 'Radio Koper', freq: '96.4 FM', style: 'Primorska · kultura in novice', group: 'Govorni', color: '#39a7a2', stream: 'https://mp3.rtvslo.si/rakp', page: 'https://siradio.si/koper/', logo: 'koper', bands: ['FM', 'DAB'] },
   { id: 'stajerski', name: 'Štajerski val', freq: '93.7 FM', style: 'Štajerska · lokalni program', group: 'Pop', color: '#cf7635', stream: 'https://stream.stajerskival.si:8443/live', page: 'https://siradio.si/stajerski/', logo: 'stajerski', bands: ['FM', 'DAB'] },
   { id: 'celje', name: 'Radio Celje', freq: '95.1 FM', style: 'Celje · lokalni program', group: 'Pop', color: '#e24d52', stream: 'https://live.radio.si/Celje', page: 'https://siradio.si/celje/', logo: 'celje', bands: ['FM'] },
@@ -77,13 +81,13 @@ const SI_RADIO_STATIONS = [
   { id: 'triglav', name: 'Radio Triglav', freq: '89.8 FM', style: 'Gorenjska · lokalni program', group: 'Pop', color: '#4b80bc', stream: 'https://live.radio.si/Triglav', page: 'https://siradio.si/triglav/', logo: 'triglav', bands: ['FM', 'DAB'] },
   { id: 'maribor', name: 'Radio Maribor', freq: '93.1 FM', style: 'Štajerska · kultura in novice', group: 'Govorni', color: '#b84942', stream: 'https://mp3.rtvslo.si/rmb', page: 'https://siradio.si/maribor/', logo: 'maribor', bands: ['FM', 'DAB'] },
   { id: 'slovenske-gorice', name: 'Radio Slovenske gorice', freq: '96.4 FM', style: 'Lenart · lokalni program', group: 'Pop', color: '#509c5d', stream: 'https://live.radio.si/Toti-Lenart', page: 'https://siradio.si/slovenske-gorice/', logo: 'slovenske-gorice', bands: ['FM', 'DAB'] },
-  { id: 'velenje', name: 'Radio Velenje', freq: '107.8 FM', style: 'Šaleška dolina · lokalni program', group: 'Pop', color: '#4995a7', stream: 'https://live.radio.si/Velenje', page: 'https://siradio.si/velenje/', logo: 'velenje', bands: ['FM'] },
+  { id: 'velenje', name: 'Radio Velenje', freq: '107.8 FM', style: 'Šaleška dolina · lokalni program', group: 'Pop', color: '#4995a7', stream: 'https://live.radio.si/Velenje', page: 'https://siradio.si/velenje/', logo: 'velenje', bands: ['FM'], streams: ['https://live.radio.si/Velenje', 'http://live.radio.si:8000/Velenje'] },
   { id: 'prlek', name: 'Radio Prlek', freq: '88.9 FM', style: 'Ormož · lokalni program', group: 'Pop', color: '#b78045', stream: 'http://86.61.68.81:8000/', page: 'https://siradio.si/prlek/', logo: 'prlek', bands: ['FM'] },
   { id: '94', name: 'Radio 94', freq: '97.8 FM', style: 'Notranjska · lokalni program', group: 'Pop', color: '#4599a0', stream: 'http://77.38.12.198:8000/radio94', page: 'https://siradio.si/94/', logo: '94', bands: ['FM', 'DAB'] },
-  { id: 'mars', name: 'Radio Marš', freq: '95.9 FM', style: 'Maribor · neodvisni radio', group: 'Kultura', color: '#dc6746', stream: 'https://frekvenca.eu:8443/radiomars.mp3', page: 'https://siradio.si/mars/', logo: 'mars', bands: ['FM'] },
+  { id: 'mars', name: 'Radio Marš', freq: '95.9 FM', style: 'Maribor · neodvisni radio', group: 'Kultura', color: '#dc6746', stream: 'https://frekvenca.eu:8443/radiomars.mp3', page: 'https://siradio.si/mars/', logo: 'mars', bands: ['FM'], streams: ['https://frekvenca.eu:8443/radiomars.mp3', 'http://frekvenca.eu:8000/radiomars.mp3'] },
   { id: 'kranj', name: 'Radio Kranj', freq: '97.3 FM', style: 'Gorenjska · lokalni program', group: 'Pop', color: '#5287c7', stream: 'https://live.radio.si/Kranj', page: 'https://siradio.si/kranj/', logo: 'kranj', bands: ['FM', 'DAB'] },
   { id: 'student', name: 'Radio Študent', freq: '89.3 FM', style: 'Kultura · glasba · študentski radio', group: 'Kultura', color: '#b88b3c', stream: 'https://kruljo.radiostudent.si:8001/hiq', page: 'https://siradio.si/student/', logo: 'student', bands: ['FM', 'DAB'] },
-  { id: 'sora', name: 'Radio Sora', freq: '91.1 FM', style: 'Škofja Loka · lokalni program', group: 'Pop', color: '#438c70', stream: 'https://stream.radio-sora.si:8001/radio-sora.mp3', page: 'https://siradio.si/sora/', logo: 'sora', bands: ['FM', 'DAB'] },
+  { id: 'sora', name: 'Radio Sora', freq: '91.1 FM', style: 'Škofja Loka · lokalni program', group: 'Pop', color: '#438c70', stream: 'https://stream.radio-sora.si:8001/radio-sora.mp3', page: 'https://siradio.si/sora/', logo: 'sora', bands: ['FM', 'DAB'], streams: ['https://stream.radio-sora.si:8001/radio-sora.mp3', 'http://radio-sora.si:8000/radio-sora.mp3'] },
   { id: 'muravideki-magyar-ljubljana', name: 'Muravidéki Magyar Rádió', freq: '87.6 FM', style: 'Madžarski program · Pomurje', group: 'Govorni', color: '#4789b2', stream: 'https://mp3.rtvslo.si/mmr', page: 'https://siradio.si/muravideki-magyar-ljubljana/', logo: 'muravideki-magyar-ljubljana', bands: ['FM', 'DAB'] },
 ];
 const rid = () => Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -258,6 +262,8 @@ const audioEls = [$('#audio'), h('audio', { preload: 'auto' })];
 let audio = audioEls[0];
 const radioAudio = new Audio();
 radioAudio.preload = 'none';
+let radioStartPending = false;
+let radioStartGeneration = 0;
 let audioCtx;
 let deckGain = [];
 let eqNodes;
@@ -626,17 +632,60 @@ function killGhost() {
 }
 function stopEngines() {
   ghost = null;
+  radioStartGeneration += 1;
+  radioStartPending = false;
   radioAudio.pause();
   for (const el of audioEls) el.pause();
   for (const p of ytPlayers) p.pauseVideo?.();
 }
+async function playRadioStreams(track) {
+  const streams = [...new Set([track.stream, ...(track.station?.streams || [])]
+    .filter((url) => typeof url === 'string' && /^https?:\/\//.test(url)))];
+  const generation = ++radioStartGeneration;
+  let lastError;
+  radioStartPending = true;
+  try {
+    for (const stream of streams) {
+      if (generation !== radioStartGeneration) return false;
+      radioAudio.pause();
+      radioAudio.removeAttribute('src');
+      radioAudio.load();
+      radioAudio.src = stream;
+      let timeoutId;
+      try {
+        await Promise.race([
+          radioAudio.play(),
+          new Promise((_, reject) => { timeoutId = setTimeout(() => reject(new Error('Radio stream timed out')), 10000); }),
+        ]);
+        if (generation !== radioStartGeneration) return false;
+        track.stream = stream;
+        return true;
+      } catch (error) {
+        if (generation !== radioStartGeneration) return false;
+        lastError = error;
+        console.warn(`Radio stream attempt failed for "${track.title}":`, stream, error);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+    console.error(`Radio station "${track.title}" could not start:`, lastError);
+    toast(`${track.title}: postaje ni mogoče predvajati. Preveri povezavo ali poskusi drugo postajo.`);
+    return false;
+  } finally {
+    if (generation === radioStartGeneration) radioStartPending = false;
+  }
+}
 const engineSeek = (sec) => { if (ytActive()) yt?.seekTo?.(sec, true); else if (cur?.type !== 'radio') audio.currentTime = sec; };
 const enginePlay = () => {
   if (ytActive()) yt?.playVideo?.();
-  else if (cur?.type === 'radio') radioAudio.play().catch((e) => { console.error('Radio playback failed:', e); toast('Radijske postaje ni mogoče predvajati. Preveri povezavo.'); });
+  else if (cur?.type === 'radio') playRadioStreams(cur);
   else { audioCtx?.resume(); audio.play().catch(() => {}); }
 };
-const enginePause = () => { killGhost(); if (ytActive()) yt?.pauseVideo?.(); else activeAudio().pause(); };
+const enginePause = () => {
+  if (cur?.type === 'radio') { radioStartGeneration += 1; radioStartPending = false; }
+  killGhost();
+  if (ytActive()) yt?.pauseVideo?.(); else activeAudio().pause();
+};
 
 let curStart = 0;
 let loopA = null;
@@ -652,14 +701,8 @@ async function startTrack(track, start = 0, cross = false) {
     if (!navigator.onLine) { toast('Za poslušanje radia v živo potrebuješ internetno povezavo.'); return false; }
     stopEngines();
     $('#yt-wrap').classList.remove('show');
-    radioAudio.src = track.stream;
     radioAudio.volume = db.settings.volume / 100;
-    try { await radioAudio.play(); } catch (e) {
-      console.error(`Radio station "${track.title}" could not start:`, e);
-      toast('Radijske postaje ni mogoče predvajati. Preveri povezavo ali poskusi drugo postajo.');
-      return false;
-    }
-    return true;
+    return playRadioStreams(track);
   }
   if (track.type === 'local') {
     if (!db.library.some((t) => t.id === track.id)) { toast('Skladba ni več v knjižnici.'); return false; }
@@ -719,7 +762,9 @@ async function startTrack(track, start = 0, cross = false) {
 for (const el of audioEls) {
   el.addEventListener('error', () => { if (el === audio && cur && cur.type === 'local' && el.src) toast('Skladbe ni mogoče predvajati.'); });
 }
-radioAudio.addEventListener('error', () => { if (cur?.type === 'radio') toast('Radijske postaje trenutno ni mogoče doseči.'); });
+radioAudio.addEventListener('error', () => {
+  if (cur?.type === 'radio' && !radioStartPending) toast(`${cur.title}: radijske postaje trenutno ni mogoče doseči.`);
+});
 radioAudio.addEventListener('play', () => {
   updatePlayBtn();
   if (view === 'stations') render();
@@ -1917,6 +1962,7 @@ function playRadioStation(station) {
     title: station.name,
     artist: `V ŽIVO · ${station.freq}`,
     stream: station.stream,
+    streams: station.streams,
     station,
   }, { queue: [] }).then((ok) => { if (ok && view === 'stations') render(); });
 }
