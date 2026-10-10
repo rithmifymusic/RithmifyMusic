@@ -135,7 +135,7 @@ const defaultDb = () => ({
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', preset: 'flat', skipIntro: 0, skipOutro: 0,
-    ambient: true, ambientCustom: '', ambientPulse: true, snow: true, particles: true,
+    ambient: true, ambientCustom: '', ambientPulse: true, snow: false, snowModeConfigured: true, particles: true,
   },
   peerId: '',
 });
@@ -287,7 +287,10 @@ const newSalt = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uin
 function mergeData(data) {
   const base = defaultDb();
   const d = data || {};
-  const settings = { ...base.settings, ...(d.settings || {}), eq: { ...base.settings.eq, ...((d.settings || {}).eq || {}) } };
+  const savedSettings = d.settings || {};
+  const settings = { ...base.settings, ...savedSettings, eq: { ...base.settings.eq, ...(savedSettings.eq || {}) } };
+  if (savedSettings.snowModeConfigured !== true) settings.snow = false;
+  settings.snowModeConfigured = true;
   delete settings.apiKey;
   return {
     ...base, ...d,
