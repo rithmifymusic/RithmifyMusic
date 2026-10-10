@@ -262,6 +262,7 @@ window.addEventListener('beforeunload', flush);
 
 let queue = [];
 let qIndex = -1;
+let queuePlayed = new Set();
 let cur = null;
 let shuffle = false;
 let repeat = 'off';
@@ -1006,7 +1007,15 @@ async function playTrack(track, opts = {}) {
     outroDone = '';
     curStart = start;
     cur = track;
-    if (opts.queue) { queue = opts.queue; qIndex = queue.findIndex((t) => t.id === track.id); queueOrig = null; if (shuffle) shuffleRest(); }
+    if (opts.queue) {
+      queue = opts.queue;
+      qIndex = queue.findIndex((t) => t.id === track.id);
+      queueOrig = null;
+      queuePlayed = new Set([track.id]);
+      if (shuffle) shuffleRest();
+    } else if (queue.some((t) => t.id === track.id)) {
+      queuePlayed.add(track.id);
+    }
     histAcc = 0;
     histDone = track.type === 'radio';
     save();
@@ -1022,10 +1031,19 @@ async function playTrack(track, opts = {}) {
 // Shuffle rewrites the real queue order, so "Naslednje" always shows what will actually play.
 let queueOrig = null;
 function shuffleRest() {
-  if (qIndex < 0) return;
+  if (!queue.length) return;
   queueOrig = queueOrig || [...queue];
-  const rest = shuffled(queue.slice(qIndex + 1));
-  queue = [...queue.slice(0, qIndex + 1), ...rest];
+  const currentIndex = cur ? queue.findIndex((t) => t.id === cur.id) : -1;
+  const current = currentIndex >= 0 ? queue[currentIndex] : null;
+  const played = currentIndex >= 0
+    ? queue.slice(0, currentIndex + 1).filter((track, index) => queuePlayed.has(track.id) || index === currentIndex)
+    : [];
+  const playedIds = new Set([...queuePlayed, ...(current ? [current.id] : [])]);
+  const remaining = [...new Map(queueOrig
+    .filter((track) => !playedIds.has(track.id))
+    .map((track) => [track.id, track])).values()];
+  queue = [...played, ...shuffled(remaining)];
+  qIndex = current ? played.length - 1 : -1;
 }
 function setShuffle(on) { setShuffleMode(on ? 1 : 0); }
 // 0 = off, 1 = shuffle, 2 = smart shuffle (shuffle + similar tracks, only for user-made playlists)
