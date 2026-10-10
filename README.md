@@ -4,7 +4,7 @@ Namizni Electron predvajalnik. Iskanje uporablja neuradni YouTube Music InnerTub
 
 Zavihek **Slovenske postaje** predvaja 43 slovenskih spletnih radijskih tokov, s filtri za FM, DAB in zvrstmi. Seznam, frekvence, tokovi in PNG-logotipi so povzeti po [SIradio.si](https://siradio.si/); uradni seznam DAB-programov je na [dab.si](https://dab.si/programi). Aplikacija predvaja internetne tokove, ne sprejema radijskega signala. Programi DAB brez javnega spletnega toka zato niso predvajani v aplikaciji.
 
-Zavihek **Podcasti** išče oddaje v javnem katalogu Apple Podcasts ter bere epizode iz RSS-virov izdajateljev. Ponuja tudi YouTube iskanje in samodejna priporočila; ti videoposnetki se predvajajo v vdelanem YouTube predvajalniku. Naročene oddaje se shranijo v uporabnikov profil; zvok in videoposnetki se ne prenašajo za poslušanje brez povezave.
+Zavihek **Podcasti** išče oddaje v javnem katalogu Apple Podcasts ter bere epizode iz RSS-virov izdajateljev. Ustvarjalcem lahko slediš, oddaje pa se shranijo v uporabnikov profil in so prikazane pod ustvarjalcem. Ponuja tudi YouTube iskanje in samodejna priporočila; ti videoposnetki se predvajajo v vdelanem YouTube predvajalniku. Zvok in videoposnetki se ne prenašajo za poslušanje brez povezave.
 
 Zagon: npm start
 
@@ -14,7 +14,7 @@ Lokalni Windows namestitveni program zgradiš z `npm run dist`; datoteke se ustv
 
 Javni repozitorij `rithmifymusic/RithmifyMusic` vsebuje izvorno kodo in objavljene izdaje. Potek dela ob oznaki `v*` ustvari Windows namestitveni program in ga objavi kot GitHub Release z updater metapodatki. Uporablja GitHubov kratkotrajni `GITHUB_TOKEN`; osebnega dostopnega žetona ni treba ustvarjati ali vgrajevati v aplikacijo.
 
-Za novo različico zvišaj `version` v `package.json`, spremembo objavi v zasebnem izvornem repozitoriju, nato ustvari in potisni ustrezno Gitovo oznako, na primer `v1.0.0`. Nameščena aplikacija preverja objavljene izdaje in prenese posodobitev v ozadju; namesti jo po potrditvi ponovnega zagona.
+Za novo različico zvišaj `version` v `package.json`, spremembo objavi v zasebnem izvornem repozitoriju, nato ustvari in potisni ustrezno Gitovo oznako, na primer `v1.1.0`. Nameščena aplikacija preverja objavljene izdaje in prenese posodobitev v ozadju; namesti jo po potrditvi ponovnega zagona.
 
 ## Rythmify server (Railway)
 

@@ -35,6 +35,7 @@ const ICON = {
   heartO: svg('M16.5 3c-1.7 0-3.4.8-4.5 2.1C10.9 3.8 9.2 3 7.5 3 4.4 3 2 5.4 2 8.5c0 3.4 3.4 6.5 8.5 11.1L12 21l1.5-1.4C18.6 15 22 11.900 22 8.500 22 5.400 19.600 3 16.500 3zm-4.400 15.500-.100.100-.100-.100C7.400 14.400 4 11.400 4 8.500 4 6.500 5.500 5 7.500 5c1.500 0 3 1 3.500 2.400h2C13.500 6 15 5 16.500 5c2 0 3.500 1.500 3.500 3.500 0 2.900-3.400 5.900-7.900 10z'),
   plus: svg('M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z'),
   home: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/></svg>',
+  podcast: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="13" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>',
   radio: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/></svg>',
   viz: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/></svg>',
   lyr: svg('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z'),
@@ -131,7 +132,7 @@ const confirmBox = (title, text) => modal(title, () => h('div', { class: 'note' 
 
 // ---------- State ----------
 const defaultDb = () => ({
-  library: [], liked: [], playlists: [], history: [], lyrics: {}, podcasts: [],
+  library: [], liked: [], playlists: [], history: [], lyrics: {}, podcasts: [], podcastCreators: [],
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', vizColor: 'theme', vizHeight: 52, vizGlow: true, vizSmoothing: 0.72, preset: 'flat', skipIntro: 0, skipOutro: 0,
@@ -292,6 +293,23 @@ const newSalt = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uin
 function mergeData(data) {
   const base = defaultDb();
   const d = data || {};
+  const podcastCreators = new Map();
+  const addPodcast = (show, creatorName) => {
+    if (!show || !show.id) return;
+    const name = String(creatorName || show.artist || show.creator || show.title || 'Podcast').trim() || 'Podcast';
+    const id = name.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ');
+    let creator = podcastCreators.get(id);
+    if (!creator) {
+      creator = { id, name, shows: [] };
+      podcastCreators.set(id, creator);
+    }
+    const normalizedShow = { ...show, id: String(show.id) };
+    if (!creator.shows.some((item) => String(item.id) === normalizedShow.id)) creator.shows.push(normalizedShow);
+  };
+  for (const creator of Array.isArray(d.podcastCreators) ? d.podcastCreators : []) {
+    for (const show of Array.isArray(creator.shows) ? creator.shows : []) addPodcast(show, creator.name);
+  }
+  for (const show of Array.isArray(d.podcasts) ? d.podcasts : []) addPodcast(show);
   const savedSettings = d.settings || {};
   const settings = { ...base.settings, ...savedSettings, eq: { ...base.settings.eq, ...(savedSettings.eq || {}) } };
   if (savedSettings.snowModeConfigured !== true) settings.snow = false;
@@ -305,6 +323,8 @@ function mergeData(data) {
   delete settings.apiKey;
   return {
     ...base, ...d,
+    podcasts: [],
+    podcastCreators: [...podcastCreators.values()],
     settings,
   };
 }
@@ -2321,22 +2341,38 @@ async function searchPodcasts(query, source = podcastSearch.source) {
   }
 }
 
-function subscribePodcast(show) {
-  if (db.podcasts.some((item) => String(item.id) === String(show.id))) return;
-  db.podcasts.push({
-    id: String(show.id),
-    title: show.title,
-    artist: show.artist,
-    cover: show.cover || show.artwork || '',
-    artwork: show.artwork || show.cover || '',
-    feedUrl: show.feedUrl,
-    url: show.url || '',
-    episodeCount: Number(show.episodeCount) || 0,
-    genre: show.genre || '',
-  });
+function podcastCreatorId(show) {
+  return String(show.artist || show.creator || show.title || 'Podcast')
+    .normalize('NFKC').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+}
+
+function followedPodcastCreator(show) {
+  const id = podcastCreatorId(show);
+  return db.podcastCreators.find((creator) => creator.id === id);
+}
+
+function followPodcastCreator(show) {
+  const id = podcastCreatorId(show);
+  const name = String(show.artist || show.creator || show.title || 'Podcast').trim() || 'Podcast';
+  let creator = db.podcastCreators.find((item) => item.id === id);
+  if (!creator) {
+    creator = { id, name, shows: [] };
+    db.podcastCreators.push(creator);
+  }
+  const item = { ...show, id: String(show.id), cover: show.cover || show.artwork || '' };
+  if (!creator.shows.some((saved) => String(saved.id) === item.id)) creator.shows.push(item);
   save();
   renderAll();
-  toast('Naročen si na podcast.');
+  toast(creator.shows.length > 1
+    ? 'Oddaja dodana med tvoje podcaste.'
+    : 'Slediš ustvarjalcu.');
+}
+
+function unfollowPodcastCreator(creatorId) {
+  db.podcastCreators = db.podcastCreators.filter((creator) => creator.id !== creatorId);
+  save();
+  renderAll();
+  toast('Ustvarjalec je odstranjen iz tvojih podcastov.');
 }
 
 function openPodcast(show) {
@@ -2345,8 +2381,10 @@ function openPodcast(show) {
   renderAll();
 }
 
-function podcastCard(show, subscribed = false) {
+function podcastCard(show, showFollowControl = true) {
   const item = { ...show, cover: show.cover || show.artwork || '' };
+  const creator = followedPodcastCreator(item);
+  const showIsFollowed = creator?.shows.some((saved) => String(saved.id) === String(item.id));
   return h('div', {
     class: 'card podcast-card',
     onclick: () => openPodcast(item),
@@ -2355,18 +2393,14 @@ function podcastCard(show, subscribed = false) {
   coverEl(item, 'podcast-cover'),
   h('div', { class: 'ct' }, item.title),
   h('div', { class: 'ca' }, item.artist || item.genre || 'Podcast'),
-  h('button', {
+  showFollowControl ? h('button', {
     class: 'podcast-subscribe',
     onclick: (event) => {
       event.stopPropagation();
-      if (subscribed) {
-        db.podcasts = db.podcasts.filter((podcast) => String(podcast.id) !== String(item.id));
-        save();
-        renderAll();
-        toast('Podcast je odstranjen iz knjižnice.');
-      } else subscribePodcast(item);
+      if (creator && showIsFollowed) unfollowPodcastCreator(creator.id);
+      else followPodcastCreator(item);
     },
-  }, subscribed ? 'Odjavi se' : 'Naroči se'));
+  }, creator ? (showIsFollowed ? 'Slediš' : 'Dodaj oddajo') : 'Sledi ustvarjalcu') : null);
 }
 
 function podcastShowView(show) {
@@ -2394,13 +2428,13 @@ function podcastShowView(show) {
     hero(h('h2', {}, show.title),
       h('div', { class: 'note' }, `${show.artist || 'Podcast'}${show.episodeCount ? ` · ${show.episodeCount} epizod` : ''}`),
       h('div', { class: 'toolbar' },
-        btn(db.podcasts.some((item) => String(item.id) === String(show.id)) ? 'Odjavi se' : 'Naroči se', () => {
-          if (db.podcasts.some((item) => String(item.id) === String(show.id))) {
-            db.podcasts = db.podcasts.filter((item) => String(item.id) !== String(show.id));
-            save();
-            renderAll();
-            toast('Podcast je odstranjen iz knjižnice.');
-          } else subscribePodcast(show);
+        btn(followedPodcastCreator(show)?.shows.some((item) => String(item.id) === String(show.id))
+          ? 'Ne slediš več'
+          : followedPodcastCreator(show) ? 'Dodaj oddajo' : 'Sledi ustvarjalcu',
+        () => {
+          const creator = followedPodcastCreator(show);
+          if (creator?.shows.some((item) => String(item.id) === String(show.id))) unfollowPodcastCreator(creator.id);
+          else followPodcastCreator(show);
         }, 'btn sec'),
         show.url ? btn('Odpri v Apple Podcasts', () => window.gmajna.openExternal(show.url), 'btn sec') : null)),
     h('h3', {}, 'Epizode'),
@@ -2657,8 +2691,7 @@ const views = {
             ? h('div', { class: 'podcast-episode-results' },
               ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.'))
             : h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
-              const subscribed = db.podcasts.some((item) => String(item.id) === String(show.id));
-              return podcastCard(show, subscribed);
+              return podcastCard(show);
             }))
           : h('div', { class: 'podcast-empty' }, 'Ni rezultatov za ta iskalni niz.')) : null,
       h('section', { class: 'podcast-section podcast-suggestions' },
@@ -2674,15 +2707,20 @@ const views = {
           ? h('div', { class: 'podcast-empty' }, 'Trenutno ni priporočil. Poskusi iskanje na YouTubu.') : null),
       h('section', { class: 'podcast-section' },
         h('h3', {}, 'Tvoji podcasti'),
-        db.podcasts.length
-          ? h('div', { class: 'grid podcast-grid' }, db.podcasts.map((show) => podcastCard(show, true)))
-          : h('div', { class: 'podcast-empty' }, 'Še nisi naročen na noben podcast. Poišči oddajo zgoraj.')),
+        db.podcastCreators.length
+          ? db.podcastCreators.map((creator) => h('div', { class: 'podcast-creator-group' },
+            h('div', { class: 'podcast-creator-heading' },
+              h('div', {}, h('h4', {}, creator.name), h('small', {}, 'Ustvarjalec podcasta')),
+              btn('Ne sledi več', () => unfollowPodcastCreator(creator.id), 'btn sec')),
+            h('div', { class: 'grid podcast-grid' },
+              creator.shows.map((show) => podcastCard(show, false)))))
+          : h('div', { class: 'podcast-empty' }, 'Še ne slediš nobenemu ustvarjalcu podcastov. Poišči oddajo zgoraj.')),
       h('div', { class: 'podcast-credit' }, podcastSearch.source === 'youtube'
         ? 'YouTube · Epizode se predvajajo v vgrajenem YouTube predvajalniku.'
         : 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'))];
   },
   'podcast-show'() {
-    const show = db.podcasts.find((item) => String(item.id) === String(viewArg))
+    const show = db.podcastCreators.flatMap((creator) => creator.shows).find((item) => String(item.id) === String(viewArg))
       || podcastSearch.results.find((item) => String(item.id) === String(viewArg));
     return show
       ? podcastShowView(show)
@@ -3206,7 +3244,7 @@ async function logoutAfterDelete() {
 
 function renderSidebar() {
   const nav = (v, icon, bg, title, sub, arg) => h('button', {
-    class: 'nav' + (view === v && (viewArg || null) === (arg || null) ? ' active' : ''),
+    class: `nav${v === 'podcasts' ? ' podcast-nav' : ''}${view === v && (viewArg || null) === (arg || null) ? ' active' : ''}`,
     title,
     onclick: () => { view = v; viewArg = arg || null; renderAll(); },
   }, h('span', { class: 'ico', style: `background:${bg}` }, icon), h('span', {}, h('b', {}, title), h('small', {}, sub)));
@@ -3219,8 +3257,8 @@ function renderSidebar() {
   $('#sidebar').replaceChildren(
     h('div', { class: 'side-head' }, h('span', {}, 'Meni')),
     makeNav('home', ICON.home, 'transparent', 'Domov', 'Priporočeno'),
-    nav('podcasts', '🎙', 'linear-gradient(135deg,#5b3b91,#2f2449)', 'Podcasti', `${db.podcasts.length} naročenih`),
     nav('radio', '◉', 'transparent', 'Radio', 'Razpoloženjski miksi'),
+    makeNav('podcasts', ICON.podcast, 'linear-gradient(135deg,#8d2de2,#ec4899)', 'Podcasti', `${db.podcastCreators.length} ustvarjalcev`),
     makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo'),
     h('div', { class: 'side-head' }, h('span', {}, 'Tvoja knjižnica')),
     nav('liked', '♥', 'linear-gradient(135deg,#450af5,#c4efd9)', 'Všečkane skladbe', `${db.liked.length} skladb`),

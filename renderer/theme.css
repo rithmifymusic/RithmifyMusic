@@ -45,6 +45,8 @@ button{font-family:inherit}
 .nav.active{background:var(--hover);color:var(--text)}
 .nav .ico{width:44px;height:44px;border-radius:6px;display:grid;place-items:center;font-size:18px;flex:none;overflow:hidden}
 .nav .ico svg{display:block;width:24px;height:24px}
+.nav.podcast-nav .ico{color:#fff;border:1px solid #ffffff45;box-shadow:0 3px 14px #bd39ed55}
+.nav.podcast-nav .ico svg{width:29px;height:29px}
 .nav .ico>.station-mark{width:100%;height:100%;border-radius:6px}
 .nav .ico>.station-mark>img{padding:3px}
 .nav b{display:block;color:var(--text);font-weight:600}
@@ -99,6 +101,11 @@ h3{margin:26px 0 12px;font-size:22px;font-weight:700}
 .podcast-section h3{margin:0 0 14px}
 .podcast-suggestion-group{margin:0 0 22px}
 .podcast-suggestion-group h4{margin:0 0 10px;color:var(--muted);font-size:14px}
+.podcast-creator-group{margin:0 0 18px;padding:14px;border:1px solid #ffffff16;border-radius:14px;background:#ffffff05}
+.podcast-creator-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.podcast-creator-heading h4{margin:0 0 4px;font-size:16px}
+.podcast-creator-heading small{color:var(--muted);font-size:12px}
+.podcast-creator-heading .btn{flex:none}
 .podcast-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
 .podcast-card{min-width:0}
 .podcast-card .podcast-cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;box-shadow:0 8px 24px #0006}
