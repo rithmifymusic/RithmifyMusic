@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#1ed760', '#b388ff', '#ffc107', '#ff3d71', '#4cc3ff', '#ff8a3d'];
@@ -1352,99 +1352,36 @@ let pT = 0;
 const pDots = Array.from({ length: 90 }, () => ({
   x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, sw: 0.3 + Math.random() * 1.2,
 }));
-const snowFlakes = Array.from({ length: 90 }, () => ({
-  x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, big: Math.random() < 0.12,
+const snowFlakes = Array.from({ length: 70 }, () => ({
+  x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28,
 }));
 function drawSnow(ctx, w, hh, e) {
   for (const d of snowFlakes) {
-    d.y += (0.0006 + 0.0012 * d.z) * (1 + e * 2);
-    d.ph += 0.015;
+    d.y += (0.0005 + 0.001 * d.z) * (1 + e * 1.5);
+    d.ph += 0.012;
     if (d.y > 1.02) { d.y = -0.02; d.x = Math.random(); }
-    const x = (d.x + 0.02 * Math.sin(d.ph + d.y * 6)) * w;
+    const x = (d.x + 0.015 * Math.sin(d.ph + d.y * 6)) * w;
     const y = d.y * hh;
-    const r = (1 + d.z * 2.2) * (d.big ? 1.8 : 1);
-    ctx.fillStyle = `rgba(255,255,255,${0.45 + d.z * 0.5})`;
+    const r = 1 + d.z * 1.8;
+    ctx.fillStyle = `rgba(255,255,255,${0.25 + d.z * 0.4})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 6.283);
     ctx.fill();
-    if (d.big) {
-      ctx.strokeStyle = `rgba(255,255,255,${0.35 + d.z * 0.4})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let k = 0; k < 3; k++) {
-        const a = d.ph * 0.3 + (k * Math.PI) / 3;
-        ctx.moveTo(x - Math.cos(a) * r * 2.2, y - Math.sin(a) * r * 2.2);
-        ctx.lineTo(x + Math.cos(a) * r * 2.2, y + Math.sin(a) * r * 2.2);
-      }
-      ctx.stroke();
-    }
   }
-  const snow = (a) => `rgba(245,250,255,${a})`;
   const box = $('#content')?.getBoundingClientRect();
   const cx = box ? box.left : 0;
   const cw = box ? box.width : w;
-  const cy = box && box.top > 0 ? box.top : 0;
   const cb = box ? box.bottom : hh;
-  const sideH = cb - cy;
-  ctx.fillStyle = snow(0.95);
+  const g = ctx.createLinearGradient(0, cb - 46, 0, cb);
+  g.addColorStop(0, 'rgba(235,245,255,0)');
+  g.addColorStop(1, 'rgba(235,245,255,0.55)');
+  ctx.fillStyle = g;
   ctx.beginPath();
   ctx.moveTo(cx, cb);
-  for (let x = 0; x <= cw; x += 12) ctx.lineTo(cx + x, cb - 14 - 7 * Math.sin(x / 70) - 5 * Math.sin(x / 23 + 1));
+  for (let x = 0; x <= cw; x += 14) ctx.lineTo(cx + x, cb - 18 - 6 * Math.sin(x / 90) - 3 * Math.sin(x / 27 + 1));
   ctx.lineTo(cx + cw, cb);
   ctx.closePath();
   ctx.fill();
-  for (const side of [0, 1]) {
-    const edge = side ? cx + cw : cx;
-    ctx.fillStyle = snow(0.85);
-    ctx.beginPath();
-    ctx.moveTo(edge, cy);
-    for (let y = 0; y <= sideH; y += 12) {
-      const wd = 5 + 3 * Math.sin(y / 55 + side * 2) + 2 * Math.sin(y / 17);
-      ctx.lineTo(side ? edge - wd : edge + wd, cy + y);
-    }
-    ctx.lineTo(edge, cb);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  for (let x = 0; x <= cw; x += 10) ctx.lineTo(cx + x, cy - 5 - 3 * Math.sin(x / 40) - 2 * Math.sin(x / 13));
-  ctx.lineTo(cx + cw, cy + 3);
-  for (let x = cw; x >= 0; x -= 10) ctx.lineTo(cx + x, cy + 5 + 4 * Math.abs(Math.sin(x / 31)) + 3 * Math.sin(x / 9 + 2));
-  ctx.closePath();
-  ctx.fill();
-  const seg = 120;
-  const colors = ['#ff4d5e', '#ffd25e', '#4dd68a', '#5eb0ff'];
-  ctx.strokeStyle = 'rgba(140,140,150,0.45)';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  for (let x = 0; x < cw; x += seg) {
-    const x2 = Math.min(x + seg, cw);
-    ctx.moveTo(cx + x, cy + 2);
-    ctx.quadraticCurveTo(cx + (x + x2) / 2, cy + 18, cx + x2, cy + 2);
-  }
-  ctx.stroke();
-  let bi = 0;
-  for (let x = 0; x < cw; x += seg) {
-    for (let k = 1; k <= 3; k++) {
-      const t = k / 4;
-      const bx = cx + x + seg * t;
-      if (bx > cx + cw) break;
-      const by = cy + 2 + 32 * t * (1 - t) * 0.9 + 3;
-      const tw = 0.55 + 0.3 * Math.sin(pT * 1.6 + bi * 1.7);
-      ctx.fillStyle = colors[bi % 4];
-      ctx.globalAlpha = tw;
-      ctx.beginPath();
-      ctx.arc(bx, by, 2.6, 0, 6.283);
-      ctx.fill();
-      ctx.globalAlpha = tw * 0.25;
-      ctx.beginPath();
-      ctx.arc(bx, by, 6, 0, 6.283);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      bi++;
-    }
-  }
 }
 function startParticles() {
   document.body.classList.toggle('xmas', !!db.settings.snow);
