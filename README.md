@@ -2,6 +2,8 @@
 
 Namizni Electron predvajalnik. Iskanje uporablja neuradni YouTube Music InnerTube endpoint, predvajanje pa YouTube vdelani predvajalnik; podprte so tudi lastne zvočne datoteke. Neuradni endpointi nimajo zagotovljene razpoložljivosti ali neomejene kvote. Aplikacija ne prenaša zvočnih datotek z YouTuba.
 
+Zavihek **Slovenske postaje** predvaja 43 slovenskih spletnih radijskih tokov, s filtri za FM, DAB in zvrstmi. Seznam, frekvence, tokovi in PNG-logotipi so povzeti po [SIradio.si](https://siradio.si/); uradni seznam DAB-programov je na [dab.si](https://dab.si/programi). Aplikacija predvaja internetne tokove, ne sprejema radijskega signala. Programi DAB brez javnega spletnega toka zato niso predvajani v aplikaciji.
+
 Zagon: npm start
 
 ## Namestitveni program in samodejne posodobitve
@@ -10,7 +12,7 @@ Lokalni Windows namestitveni program zgradiš z `npm run dist`; datoteke se ustv
 
 Javni repozitorij `rithmifymusic/RithmifyMusic` vsebuje izvorno kodo in objavljene izdaje. Potek dela ob oznaki `v*` ustvari Windows namestitveni program in ga objavi kot GitHub Release z updater metapodatki. Uporablja GitHubov kratkotrajni `GITHUB_TOKEN`; osebnega dostopnega žetona ni treba ustvarjati ali vgrajevati v aplikacijo.
 
-Za novo različico zvišaj `version` v `package.json`, spremembo objavi v zasebnem izvornem repozitoriju, nato ustvari in potisni ustrezno Gitovo oznako, na primer `v0.1.1`. Nameščena aplikacija preverja objavljene izdaje in prenese posodobitev v ozadju; namesti jo po potrditvi ponovnega zagona.
+Za novo različico zvišaj `version` v `package.json`, spremembo objavi v zasebnem izvornem repozitoriju, nato ustvari in potisni ustrezno Gitovo oznako, na primer `v0.1.2`. Nameščena aplikacija preverja objavljene izdaje in prenese posodobitev v ozadju; namesti jo po potrditvi ponovnega zagona.
 
 ## Rythmify server (Render)
 

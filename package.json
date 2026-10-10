@@ -1,7 +1,7 @@
 {
   "name": "gmajna-music-priv",
   "productName": "Rythmify",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Private standalone music player",
   "main": "main.js",
   "scripts": {
@@ -22,8 +22,7 @@
     "win": {
       "icon": "renderer/img/rythmify.ico",
       "artifactName": "Rythmify-Setup-${version}.${ext}",
-      "target": "nsis",
-      "signAndEditExecutable": false
+      "target": "nsis"
     },
     "nsis": { "oneClick": true, "perMachine": false }
   },
