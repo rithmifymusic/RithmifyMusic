@@ -396,6 +396,64 @@ app.delete('/api/friends/:id', auth, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// ---- Jam invitations ----
+const JAM_ROOM_RE = /^[\w-]{1,100}$/;
+app.get('/api/jam/invites', auth, wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT i.id, i.room, i.created_at, i.expires_at, a.id AS sender_id, a.name AS sender_name, a.color AS sender_color
+     FROM jam_invites i JOIN accounts a ON a.id=i.sender_id
+     WHERE i.recipient_id=$1 AND i.status='pending' AND i.expires_at>$2
+     ORDER BY i.created_at DESC LIMIT 10`,
+    [req.acc.id, Date.now()]);
+  res.json({ invites: rows.map((r) => ({
+    id: r.id, room: r.room, createdAt: Number(r.created_at), expiresAt: Number(r.expires_at),
+    sender: { id: r.sender_id, name: r.sender_name, color: r.sender_color },
+  })) });
+}));
+
+app.post('/api/jam/invites', auth, wrap(async (req, res) => {
+  const recipient = str(req.body?.userId, 40);
+  const room = str(req.body?.room, 100);
+  if (!recipient || recipient === req.acc.id || !JAM_ROOM_RE.test(room)) {
+    return res.status(400).json({ error: 'Neveljavno povabilo v Jam.' });
+  }
+  const friend = await pool.query(
+    `SELECT 1 FROM friend_links
+     WHERE status='accepted' AND ((requester=$1 AND target=$2) OR (requester=$2 AND target=$1))`,
+    [req.acc.id, recipient]);
+  if (!friend.rowCount) return res.status(403).json({ error: 'V Jam lahko povabiš samo prijatelje.' });
+
+  const now = Date.now(), expiresAt = now + 5 * 60 * 1000;
+  await pool.query(
+    `DELETE FROM jam_invites
+     WHERE (recipient_id=$1 AND sender_id=$2 AND status='pending') OR expires_at<=$3`,
+    [recipient, req.acc.id, now]);
+  const id = crypto.randomBytes(16).toString('hex');
+  await pool.query(
+    `INSERT INTO jam_invites (id,sender_id,recipient_id,room,created_at,expires_at,status)
+     VALUES ($1,$2,$3,$4,$5,$6,'pending')`,
+    [id, req.acc.id, recipient, room, now, expiresAt]);
+  res.status(201).json({ ok: true, expiresAt });
+}));
+
+app.post('/api/jam/invites/:id/accept', auth, wrap(async (req, res) => {
+  const id = str(req.params.id, 32);
+  const { rows } = await pool.query(
+    `DELETE FROM jam_invites
+     WHERE id=$1 AND recipient_id=$2 AND status='pending' AND expires_at>$3
+     RETURNING room`,
+    [id, req.acc.id, Date.now()]);
+  if (!rows[0]) return res.status(404).json({ error: 'Povabilo je poteklo ali ni več na voljo.' });
+  res.json({ room: rows[0].room });
+}));
+
+app.delete('/api/jam/invites/:id', auth, wrap(async (req, res) => {
+  await pool.query(
+    `DELETE FROM jam_invites WHERE id=$1 AND recipient_id=$2 AND status='pending'`,
+    [str(req.params.id, 32), req.acc.id]);
+  res.json({ ok: true });
+}));
+
 // ---- Shared playlists ----
 const collabOut = async (rows) => {
   const ids = [...new Set(rows.flatMap((r) => r.members))];
@@ -547,5 +605,15 @@ app.post('/api/reset/confirm', wrap(async (req, res) => {
     account_id text PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
     code_hash text NOT NULL, expires_at bigint NOT NULL, attempts integer NOT NULL DEFAULT 0
   )`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS jam_invites (
+    id text PRIMARY KEY,
+    sender_id text NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    recipient_id text NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    room text NOT NULL,
+    created_at bigint NOT NULL,
+    expires_at bigint NOT NULL,
+    status text NOT NULL DEFAULT 'pending'
+  )`);
+  await pool.query('CREATE INDEX IF NOT EXISTS jam_invites_recipient_idx ON jam_invites (recipient_id, expires_at) WHERE status=\'pending\'');
   httpServer.listen(PORT, () => console.log('Rythmify account and Jam server listening on', PORT));
 })();

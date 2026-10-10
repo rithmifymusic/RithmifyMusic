@@ -8,7 +8,7 @@ const { pipeline } = require('stream/promises');
 // Keep the data folder from before the rename to Rythmify so accounts and the offline library stay intact.
 app.setPath('userData', path.join(app.getPath('appData'), 'Gmajna Music Priv'));
 if (process.platform === 'win32') app.setAppUserModelId('com.gmajna.musicpriv');
-const DEFAULT_ACCOUNT_API_URL = 'https://rithmify-server.onrender.com';
+const DEFAULT_ACCOUNT_API_URL = 'https://rithmifymusic.up.railway.app';
 const AUDIO_EXT = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'aac', 'opus'];
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',

@@ -129,6 +129,17 @@ input[type=range]{accent-color:var(--accent);cursor:pointer}
 #modal{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:40}
 #modal .panel{min-width:380px;background:#282828}
 #toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;color:#000;font-weight:600;padding:10px 20px;border-radius:24px;z-index:50;display:none}
+#jam-invite-popups{position:fixed;left:16px;bottom:100px;z-index:35;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 32px));max-height:min(60vh,520px);overflow-y:auto;pointer-events:none}
+.jam-invite-popup{display:flex;align-items:center;gap:10px;padding:12px;background:color-mix(in srgb,var(--panel2) 94%,var(--accent));border:1px solid color-mix(in srgb,var(--accent) 55%,#fff2);border-radius:14px;box-shadow:0 12px 36px #000a;pointer-events:auto;animation:jam-invite-in .2s ease-out}
+.jam-invite-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.jam-invite-copy strong,.jam-invite-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jam-invite-copy span{color:var(--muted);font-size:12px}
+.jam-invite-actions{display:flex;gap:6px}
+.jam-invite-actions .btn{padding:7px 12px;font-size:12px}
+.jam-invite-actions .btn.sec{padding:6px 10px}
+.jam-invite-actions .btn:disabled{opacity:.55;cursor:wait}
+@keyframes jam-invite-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:500px){#jam-invite-popups{left:8px;bottom:92px;max-width:calc(100vw - 16px)}.jam-invite-popup{gap:7px;padding:9px}.jam-invite-actions{gap:4px}.jam-invite-actions .btn{padding:7px 9px}}
 
 #auth{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--accent) 45%,#000),#000 70%)}
 #auth .box{width:min(420px,92vw);background:#000c;border-radius:16px;padding:36px;text-align:center}

@@ -154,11 +154,11 @@ function flush() {
 }
 
 // ---------- Cloud accounts ----------
-const DEFAULT_ACCOUNT_API_URL = 'https://rithmify-server.onrender.com';
+const DEFAULT_ACCOUNT_API_URL = 'https://rithmifymusic.up.railway.app';
 function normalizeAccountApiUrl(value) {
   const url = new URL(String(value || '').trim());
   const local = ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
-  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) throw new Error('Uporabi HTTPS naslov Render strežnika.');
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) throw new Error('Uporabi HTTPS naslov Rythmify strežnika.');
   if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
     throw new Error('URL ne sme vsebovati poti, prijavnih podatkov ali dodatnih parametrov.');
   }
@@ -306,6 +306,8 @@ function enterAccount(acc) {
   delete db.settings.server;
   if (!db.peerId) db.peerId = rid();
   root.session = acc.remember ? acc.id : '';
+  pendingJamInvites.clear();
+  renderJamInvitePopups();
   $('#volume').value = db.settings.volume;
   for (const el of audioEls) { el.volume = db.settings.volume / 100; el.playbackRate = db.settings.speed; }
   radioAudio.volume = db.settings.volume / 100;
@@ -317,6 +319,7 @@ function enterAccount(acc) {
   renderAll();
   toggleSide(true);
   flush();
+  void pollJamInvites();
   if (pendingJamInvite) setTimeout(() => { void openPendingJamInvite(); }, 0);
   refreshBillingStatus().then(() => {
     if (account === acc && view === 'profile') render();
@@ -335,6 +338,8 @@ async function logout() {
   stopEngines();
   cur = null; queue = []; qIndex = -1;
   account = null;
+  pendingJamInvites.clear();
+  renderJamInvitePopups();
   billingStatus = { isPremium: false, status: 'loading', cancelAtPeriodEnd: false, currentPeriodEnd: 0 };
   root.session = '';
   db = defaultDb();
@@ -2416,6 +2421,7 @@ const views = {
         h('ul', { class: 'members' }, jam.members.map((m) => h('li', {}, m.name + (m.peerId === jam.hostId ? ' (gostitelj)' : '')))),
         jam.isHost && h('label', {}, h('input', { type: 'checkbox', checked: jam.controlAllowed ? 'checked' : null, onchange: (e) => jam.socket.emit('jam:control', { enabled: e.target.checked }) }), ' Dovoli vsem upravljanje'),
         h('div', { class: 'toolbar', style: 'margin-top:16px' },
+          jam.isHost && h('button', { class: 'btn sec', disabled: !jam.connected, onclick: inviteJamFriend }, 'Povabi prijatelja'),
           btn(jam.isHost ? 'Končaj Jam' : 'Zapusti Jam', () => jamLeave(false), 'btn danger')))
       : h('div', {},
         h('div', { class: 'note' }, 'Jam omogoča skupno poslušanje v realnem času. Sinhronizirajo se YouTube skladbe; lokalnih datotek ni mogoče deliti.'),
@@ -2929,6 +2935,95 @@ const jam = {
 const jamGuest = () => !!jam.room && !jam.isHost;
 const slimTrack = (t) => (t.type === 'yt' ? t : { id: t.id, type: 'local', title: t.title, artist: t.artist });
 const refreshJam = () => { if (account) { renderSidebar(); if (view === 'jam') render(); } };
+const pendingJamInvites = new Map();
+const processingJamInvites = new Set();
+
+function renderJamInvitePopups() {
+  let host = $('#jam-invite-popups');
+  if (!host) {
+    host = h('div', { id: 'jam-invite-popups', 'aria-live': 'polite' });
+    document.body.append(host);
+  }
+  const invites = [...pendingJamInvites.values()];
+  host.replaceChildren(...invites.map((invite) => h('section', { class: 'jam-invite-popup' },
+    userDot(invite.sender, 38),
+    h('div', { class: 'jam-invite-copy' },
+      h('strong', {}, invite.sender.name),
+      h('span', {}, 'te vabi v Jam')),
+    h('div', { class: 'jam-invite-actions' },
+      h('button', { class: 'btn', disabled: processingJamInvites.has(invite.id), onclick: () => acceptJamInvite(invite.id) }, 'Sprejmi'),
+      h('button', { class: 'btn sec', disabled: processingJamInvites.has(invite.id), onclick: () => declineJamInvite(invite.id) }, 'Zavrni')))));
+}
+
+async function pollJamInvites() {
+  if (!cloudOn() || jamInvitePollBusy) return;
+  const activeAccount = account;
+  jamInvitePollBusy = true;
+  try {
+    const response = await cloud('GET', '/api/jam/invites', null, activeAccount.token);
+    if (!response.ok || account !== activeAccount) return;
+    pendingJamInvites.clear();
+    for (const invite of Array.isArray(response.json.invites) ? response.json.invites : []) {
+      if (invite && typeof invite.id === 'string' && typeof invite.room === 'string'
+          && invite.sender && typeof invite.sender.name === 'string') {
+        pendingJamInvites.set(invite.id, invite);
+      }
+    }
+    renderJamInvitePopups();
+  } finally {
+    jamInvitePollBusy = false;
+  }
+}
+
+async function acceptJamInvite(id) {
+  const invite = pendingJamInvites.get(id);
+  if (!invite || !cloudOn() || processingJamInvites.has(id)) return;
+  if (jam.room && !(await confirmBox('Pridruži se Jamu', 'Če sprejmeš, boš zapustil trenutni Jam.'))) return;
+  processingJamInvites.add(id);
+  renderJamInvitePopups();
+  try {
+    const response = await cloud('POST', `/api/jam/invites/${encodeURIComponent(id)}/accept`, {}, account.token);
+    if (!response.ok) { toast(response.json.error || 'Povabilu se ni mogoče pridružiti.'); return; }
+    pendingJamInvites.delete(id);
+    if (jam.room) jamLeave(true);
+    view = 'jam';
+    viewArg = null;
+    jamJoin(response.json.room);
+    renderAll();
+  } finally {
+    processingJamInvites.delete(id);
+    renderJamInvitePopups();
+  }
+}
+
+async function declineJamInvite(id) {
+  if (!cloudOn() || processingJamInvites.has(id)) return;
+  processingJamInvites.add(id);
+  renderJamInvitePopups();
+  try {
+    const response = await cloud('DELETE', `/api/jam/invites/${encodeURIComponent(id)}`, null, account.token);
+    if (!response.ok) { toast(response.json.error || 'Povabila ni mogoče zavrniti.'); return; }
+    pendingJamInvites.delete(id);
+  } finally {
+    processingJamInvites.delete(id);
+    renderJamInvitePopups();
+  }
+}
+
+async function inviteJamFriend() {
+  if (!jam.isHost || !jam.room || !cloudOn()) return;
+  await socialRefresh(true);
+  const options = social.friends.map((friend) => ({ label: friend.name, value: friend.id }));
+  if (!options.length) { toast('Ni prijateljev za povabilo. Dodaj jih v zavihku Uporabniki.'); return; }
+  const userId = await choose('Povabi prijatelja v Jam', options);
+  if (!userId) return;
+  const response = await cloud('POST', '/api/jam/invites', { userId, room: jam.room }, account.token);
+  if (!response.ok) { toast(response.json.error || 'Povabila ni mogoče poslati.'); return; }
+  toast('Povabilo v Jam poslano.');
+}
+
+let jamInvitePollBusy = false;
+setInterval(() => { if (!document.hidden) void pollJamInvites(); }, 10000);
 
 function jamOpen(room, host) {
   let serverUrl;
