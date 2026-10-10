@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#1ed760', '#b388ff', '#ffc107', '#ff3d71', '#4cc3ff', '#ff8a3d'];
@@ -40,6 +40,7 @@ const ICON = {
   radio: lineIcon('<path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/>'),
   radioStation: lineIcon('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/>'),
   slovenia: lineIcon('<path d="M6.5 20.5h11l-1.1-4.5-2.2-2.8-2.2 2.1-2-3.2-2.4 3.2z"/><path d="M6.5 20.5h11M5.5 9.5a6.5 6.5 0 0 0 13 0"/><path d="M8 7.2 9 6l1 1.2L11 6l1 1.2L13 6l1 1.2L15 6l1 1.2M7 4.5v2m10-2v2"/>'),
+  slovenianFlag: '<img src="assets/slovenian-flag.png" alt="Slovenska zastava">',
   viz: lineIcon('<path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/>'),
   liked: lineIcon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/>'),
   download: lineIcon('<path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 17v4h14v-4"/>'),
@@ -258,8 +259,6 @@ function save() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flush, 300);
 }
-window.addEventListener('beforeunload', flush);
-
 let queue = [];
 let qIndex = -1;
 let queuePlayed = new Set();
@@ -289,6 +288,63 @@ let eqNodes;
 let analyser;
 let compressor;
 let seeking = false;
+
+function playbackSnapshot() {
+  if (!account || !cur || jamGuest()) return null;
+  try {
+    return {
+      track: JSON.parse(JSON.stringify(cur)),
+      queue: JSON.parse(JSON.stringify(queue.slice(0, 300))),
+      qIndex,
+      position: Math.max(0, Number(getPos()) || 0),
+      playing: isPlaying(),
+      shuffle,
+      repeat,
+      view,
+      viewArg,
+    };
+  } catch (error) {
+    console.warn('Playback state could not be saved:', error);
+    return null;
+  }
+}
+
+function persistPlayback() {
+  if (!account) return;
+  account.playback = playbackSnapshot();
+  void window.gmajna.setStore(root);
+}
+
+async function restorePlayback(acc) {
+  if (account !== acc || cur || !acc.playback?.track) return;
+  const state = acc.playback;
+  const track = state.track;
+  const restoredQueue = Array.isArray(state.queue) ? state.queue.filter((item) => item && item.id && item.type) : [];
+  const restoredTrack = restoredQueue.find((item) => item.id === track.id) || track;
+  const restoredIndex = restoredQueue.findIndex((item) => item.id === restoredTrack.id);
+  const start = Math.max(0, Number(state.position) || 0);
+  const started = await playTrack(restoredTrack, {
+    start,
+    queue: restoredQueue.length ? restoredQueue : [restoredTrack],
+  });
+  if (!started || account !== acc) return;
+  qIndex = restoredIndex >= 0 ? restoredIndex : 0;
+  shuffle = state.shuffle === true;
+  repeat = ['off', 'all', 'one'].includes(state.repeat) ? state.repeat : 'off';
+  view = typeof state.view === 'string' ? state.view : 'home';
+  viewArg = state.viewArg ?? null;
+  if (!state.playing) enginePause();
+  updateNow();
+  renderAll();
+  updatePlayBtn();
+  persistPlayback();
+}
+
+window.addEventListener('beforeunload', () => {
+  persistPlayback();
+  flush();
+});
+setInterval(persistPlayback, 1000);
 
 // ---------- Accounts ----------
 async function hashPw(pw, salt) {
@@ -368,6 +424,7 @@ function enterAccount(acc) {
   renderAll();
   toggleSide(true);
   flush();
+  setTimeout(() => { void restorePlayback(acc); }, 0);
   void pollJamInvites();
   if (pendingJamInvite) setTimeout(() => { void openPendingJamInvite(); }, 0);
   refreshBillingStatus().then(() => {
@@ -852,14 +909,17 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
   if (!cross) killGhost();
   if (track.type === 'radio') {
     if (!navigator.onLine) { toast('Za poslušanje radia v živo potrebuješ internetno povezavo.'); return false; }
+    ensureAudioGraph();
     stopEngines();
     $('#yt-wrap').classList.remove('show');
     radioAudio.volume = db.settings.volume / 100;
+    await audioCtx.resume();
     return playRadioStreams(track);
   }
   if (track.type === 'podcast') {
     if (!navigator.onLine) { toast('Za poslušanje podcasta potrebuješ internetno povezavo.'); return false; }
     if (!/^https:\/\//i.test(track.audioUrl || '')) { toast('Epizoda nima veljavne varne zvočne povezave.'); return false; }
+    ensureAudioGraph();
     if (!cross) {
       stopEngines();
       $('#yt-wrap').classList.remove('show');
@@ -874,6 +934,7 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
       await waitForMediaMetadata(podcastAudio);
       if (!isCurrentPlayRequest(requestId)) return false;
       if (start) podcastAudio.currentTime = Math.min(start, Math.max(0, podcastAudio.duration - 1));
+      await audioCtx.resume();
       await podcastAudio.play();
     } catch (error) {
       if (isCurrentPlayRequest(requestId)) toast(error.message || 'Podcast epizode ni mogoče predvajati.');
@@ -998,7 +1059,9 @@ async function playTrack(track, opts = {}) {
     xfadeBusy = false;
   }
   playRequestPending = true;
-  const start = Number(opts.start) || (!jam.room && track.type !== 'radio' ? Number(db.settings.skipIntro) || 0 : 0);
+  const start = opts.start != null
+    ? Math.max(0, Number(opts.start) || 0)
+    : (!jam.room && track.type !== 'radio' ? Number(db.settings.skipIntro) || 0 : 0);
   const out = opts.cross && cur ? (cur.type === 'yt' ? { type: 'yt', p: yt } : { type: 'local', el: audio }) : null;
   try {
     const ok = await startTrack(track, start, !!opts.cross, requestId);
@@ -1094,6 +1157,7 @@ function togglePlay() {
   if (isPlaying()) enginePause(); else enginePlay();
   updatePlayBtn();
   jamBroadcast(true);
+  persistPlayback();
 }
 
 function pickNext(auto) {
@@ -1265,6 +1329,7 @@ function seekTo(sec) {
   if (!cur) return;
   engineSeek(sec);
   jamBroadcast(true);
+  persistPlayback();
 }
 
 function enqueue(track) {
@@ -1553,6 +1618,7 @@ $('#btn-repeat').onclick = () => {
   const b = $('#btn-repeat');
   b.classList.toggle('on', repeat !== 'off');
   b.innerHTML = ICON.repeat + (repeat === 'one' ? '<sup>1</sup>' : '');
+  persistPlayback();
 };
 for (const [id, icon] of [['#btn-shuffle', ICON.shuffle], ['#btn-prev', ICON.prev], ['#btn-next', ICON.next],
   ['#btn-repeat', ICON.repeat], ['#btn-viz', ICON.viz], ['#btn-lyrics', ICON.now], ['#btn-lyr', ICON.lyr], ['#btn-queue', ICON.queue], ['#btn-mini', ICON.mini]]) {
@@ -1799,7 +1865,7 @@ function npRenderList() {
     : [h('div', { class: 'note' }, 'Ni naslednjih skladb.')]));
 }
 
-// Visualizer on the left of the full-screen view: real spectrum for offline files, a gentle animation for YouTube.
+// Visualizer on the left of the full-screen view: real spectrum when available, with a fallback for restricted streams.
 let npVizRaf = 0;
 let npPhase = 0;
 function npVizLoop() {
@@ -1814,12 +1880,15 @@ function npVizLoop() {
   ctx.clearRect(0, 0, w, hh);
   const n = 32;
   const data = new Float32Array(n);
-  if (cur && analyser && !ytActive() && !activeAudio().paused) {
+  let real = cur && analyser && !ytActive() && !activeAudio().paused;
+  if (real) {
     analyser.getByteFrequencyData(vizData);
     for (let i = 0; i < n; i++) data[i] = vizData[Math.floor((i / n) * 140)] / 255;
-  } else if (cur && isPlaying()) {
+    real = cur.type === 'local' || data.some((value) => value > 0.012);
+  }
+  if (!real && cur && isPlaying()) {
     npPhase += 0.14;
-    for (let i = 0; i < n; i++) data[i] = 0.3 + 0.24 * Math.sin(npPhase + i * 0.45) + 0.16 * Math.sin(npPhase * 1.7 + i * 0.2);
+    approximateVizData(data, npPhase);
   }
   for (let i = 0; i < n; i++) npSm[i] += (data[i] - npSm[i]) * 0.68;
   let bass = 0;
@@ -1853,7 +1922,7 @@ function npVizLoop() {
   ctx.shadowBlur = 8;
   const seg = (a, b, ph) => {
     const depth = (a[2] + b[2]) / 2;
-    const hh2 = (hue + 16 * Math.sin(ph + npRot) + 4) % 360;
+    const hh2 = visualizerHue(hue, ph);
     ctx.strokeStyle = `hsla(${hh2},90%,${62 - depth * 14}%,${0.8 - depth * 0.35})`;
     ctx.shadowColor = `hsl(${hh2},100%,60%)`;
     ctx.beginPath();
@@ -1884,7 +1953,7 @@ function npVizLoop() {
   for (const d of npDots) {
     const e = npSm[d.b % n] || 0;
     const q = vert(d.th, d.ph + npTime * 0.1, 1.18 + d.k * 0.3 + e * 0.25);
-    ctx.fillStyle = `hsla(${(hue + 16 * Math.sin(d.ph + npRot) + 4) % 360},95%,70%,${0.25 + e * 0.5})`;
+    ctx.fillStyle = `hsla(${visualizerHue(hue, d.ph)},95%,70%,${0.25 + e * 0.5})`;
     ctx.fillRect(q[0], q[1], 1.6, 1.6);
   }
   drawNpBottomViz(data);
@@ -1903,10 +1972,10 @@ function drawNpBottomViz(data) {
   const playing = cur && isPlaying();
   const energy = Math.min(1, Math.max(0.08, npPulse * 1.8 + (playing ? 0.16 : 0)));
   const layers = [
-    { offset: 0.72, amp: 0.12, hue: hue - 12, alpha: 0.34 },
-    { offset: 0.62, amp: 0.16, hue: hue - 4, alpha: 0.48 },
-    { offset: 0.51, amp: 0.18, hue: hue + 6, alpha: 0.62 },
-    { offset: 0.42, amp: 0.13, hue: hue + 16, alpha: 0.42 },
+    { offset: 0.72, amp: 0.12, light: 48, alpha: 0.24 },
+    { offset: 0.62, amp: 0.16, light: 56, alpha: 0.36 },
+    { offset: 0.51, amp: 0.18, light: 66, alpha: 0.52 },
+    { offset: 0.42, amp: 0.13, light: 74, alpha: 0.32 },
   ];
   for (let layer = 0; layer < layers.length; layer++) {
     const item = layers[layer];
@@ -1923,10 +1992,11 @@ function drawNpBottomViz(data) {
     };
     for (let i = 0; i <= 45; i++) points.push([(i / 90) * w, waveAt(i)]);
     for (let i = 44; i >= 0; i--) points.push([w - (i / 90) * w, waveAt(i)]);
-    const color = `hsla(${(item.hue + npTime * 4) % 360},95%,65%,${item.alpha})`;
+    const paletteHue = visualizerHue(hue, layer * 1.7);
+    const color = `hsla(${paletteHue},82%,${item.light}%,${item.alpha})`;
     const gradient = ctx.createLinearGradient(0, baseY - amp, 0, hh);
-    gradient.addColorStop(0, `hsla(${(item.hue + 12) % 360},95%,65%,${item.alpha * 0.7})`);
-    gradient.addColorStop(1, `hsla(${(item.hue + 45) % 360},95%,35%,0)`);
+    gradient.addColorStop(0, `hsla(${paletteHue},82%,${item.light}%,${item.alpha * 0.7})`);
+    gradient.addColorStop(1, `hsla(${paletteHue},82%,${Math.max(20, item.light - 22)}%,0)`);
     ctx.beginPath();
     points.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
     ctx.lineTo(w, hh);
@@ -1949,10 +2019,14 @@ let npPulse = 0;
 let npRot = 0;
 let npTime = 0;
 const npDots = Array.from({ length: 220 }, () => ({ th: Math.acos(2 * Math.random() - 1), ph: Math.random() * Math.PI * 2, k: Math.random(), b: Math.floor(Math.random() * 32) }));
+const visualizerHue = (hue, offset) => (hue + 16 * Math.sin(offset + npRot) + 4) % 360;
 function hexHue(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
-  if (!m) return 150;
-  const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255);
+  const rgb = /^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i.exec(hex);
+  if (!m && !rgb) return 150;
+  const [r, g, b] = m
+    ? [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255)
+    : [rgb[1], rgb[2], rgb[3]].map((x) => Number(x) / 255);
   const mx = Math.max(r, g, b);
   const d = mx - Math.min(r, g, b);
   if (!d) return 200;
@@ -2885,7 +2959,7 @@ const views = {
     });
     mainPlay.innerHTML = isPlaying() && current ? ICON.pause : ICON.play;
     const stationFlag = h('div', { class: 'station-flag-emblem', 'aria-hidden': 'true' });
-    stationFlag.innerHTML = ICON.slovenia;
+    stationFlag.innerHTML = ICON.slovenianFlag;
     return [
       h('section', { class: 'station-hero' },
         stationFlag,
@@ -3299,7 +3373,7 @@ const views = {
             h('b', {}, 'Odzivnost'),
             range('Višina prikaza', 'vizHeight', 30, 70, ' vh'),
             range('Glajenje zvoka', 'vizSmoothing', 0, 0.95, '%'))),
-        h('p', { class: 'viz-help' }, 'Za lokalne skladbe se uporablja dejanski zvok. Pri YouTube predvajanju aplikacija prikaže animiran približek.')),
+        h('p', { class: 'viz-help' }, 'Vizualizator deluje pri lokalnih skladbah, radiu, podcastih in YouTube predvajanju. Pri omejenih spletnih virih uporablja odziven približek z ocenjenim tempom skladbe.')),
     ];
   },
   settings() {
@@ -3338,7 +3412,7 @@ const views = {
         h('select', { onchange: (e) => { s.theme = e.target.value; s.ambientCustom = ''; save(); applyTheme(); } },
           Object.keys(THEME_COLORS).map((t) => h('option', { value: t, selected: s.theme === t ? 'selected' : null }, THEME_NAMES[t])))),
       range('Zatemnitev med skladbami (s)', () => s.fade, (v) => { s.fade = v; }, 0, 12),
-      h('div', { class: 'note' }, 'Izenačevalnik in vizualizator v živo delujeta za offline skladbe (YouTube predvajalnika ni mogoče obdelovati). Zatemnitev deluje povsod.'),
+      h('div', { class: 'note' }, 'Izenačevalnik deluje samo pri skladbah iz Offline knjižnice. Vizualizator deluje pri vseh predvajalnih virih; pri omejenih spletnih virih uporablja približen ritem z ocenjenim tempom. Zatemnitev deluje povsod.'),
       range('Bas (dB)', () => s.eq.bass, (v) => { s.eq.bass = v; applyEq(); }, -12, 12),
       range('Srednji toni (dB)', () => s.eq.mid, (v) => { s.eq.mid = v; applyEq(); }, -12, 12),
       range('Visoki toni (dB)', () => s.eq.treble, (v) => { s.eq.treble = v; applyEq(); }, -12, 12),
@@ -3599,7 +3673,7 @@ function drawFxMenu() {
       return b;
     })),
     h('div', { class: 'fxbody' }, cards[fxTab] || []),
-    h('div', { class: 'fxnote' }, 'Izenačevalnik, normalizacija in vizualizator v živo delujejo za offline skladbe. Pri YouTube skladbah ni mogoče, ker zvok predvaja uradni YouTube predvajalnik.'));
+    h('div', { class: 'fxnote' }, 'Izenačevalnik in normalizacija delujeta za Offline skladbe. Vizualizator deluje pri vseh virih; pri YouTube in omejenih spletnih virih uporablja približen ritem z ocenjenim tempom.'));
 }
 let fxTab = 'zvok';
 $('#btn-fx').onclick = (e) => {
@@ -3615,6 +3689,22 @@ document.addEventListener('click', () => { $('#fxmenu').hidden = true; });
 let vizRaf = 0;
 const vizData = new Uint8Array(256);
 let vizPhase = 0;
+function approximateVizData(data, phase) {
+  const key = `${cur?.artist || ''}|${cur?.title || ''}|${cur?.id || ''}`;
+  let hash = 2166136261;
+  for (let i = 0; i < key.length; i++) hash = Math.imul(hash ^ key.charCodeAt(i), 16777619);
+  const bpm = 88 + (Math.abs(hash) % 68);
+  const clock = cur?.type === 'yt' ? getPos() : performance.now() / 1000;
+  const beat = (Math.sin(clock * bpm / 60 * Math.PI * 2 + phase) + 1) / 2;
+  const kick = Math.pow(beat, 4);
+  const groove = (Math.sin(clock * bpm / 30 * Math.PI + phase * 0.4) + 1) / 2;
+  for (let i = 0; i < data.length; i++) {
+    const band = i / Math.max(1, data.length - 1);
+    const shape = 1 - band * 0.62;
+    const movement = (Math.sin(clock * (1.4 + band * 2.6) + i * 0.31 + phase) + 1) / 2;
+    data[i] = Math.min(1, 0.08 + kick * shape * 0.66 + groove * (0.08 + shape * 0.14) + movement * 0.08);
+  }
+}
 function vizSample() {
   if (cur && analyser && !ytActive() && !activeAudio().paused) return true;
   return false;
@@ -3628,16 +3718,18 @@ function vizLoop() {
   if (canvas.width !== w || canvas.height !== hgt) { canvas.width = w; canvas.height = hgt; }
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
   const settings = db.settings;
-  const real = vizSample();
+  let real = vizSample();
   if (analyser) analyser.smoothingTimeConstant = Number(settings.vizSmoothing) || 0;
   const n = 64;
   const data = new Float32Array(n);
   if (real) {
     analyser.getByteFrequencyData(vizData);
     for (let i = 0; i < n; i++) data[i] = vizData[Math.floor((i / n) * 160)] / 255;
-  } else if (cur && isPlaying()) {
+    real = cur.type === 'local' || data.some((value) => value > 0.012);
+  }
+  if (!real && cur && isPlaying()) {
     vizPhase += 0.08;
-    for (let i = 0; i < n; i++) data[i] = 0.25 + 0.2 * Math.sin(vizPhase + i * 0.3) + 0.12 * Math.sin(vizPhase * 1.7 + i * 0.11);
+    approximateVizData(data, vizPhase);
   }
   ctx.clearRect(0, 0, w, hgt);
   const colorFor = (index) => {
