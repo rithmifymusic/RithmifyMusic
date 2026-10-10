@@ -134,7 +134,7 @@ const defaultDb = () => ({
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', preset: 'flat', skipIntro: 0, skipOutro: 0,
-    ambient: true, ambientCustom: '', ambientPulse: true,
+    ambient: true, ambientCustom: '', ambientPulse: true, snow: true, particles: true,
   },
   peerId: '',
 });
@@ -296,6 +296,9 @@ function mergeData(data) {
 
 function enterAccount(acc) {
   const wasDirty = !!acc.dirty;
+  const authEl = $('#auth');
+  authEl.hidden = true;
+  authEl.replaceChildren();
   account = acc;
   billingStatus = { isPremium: false, status: 'loading', cancelAtPeriodEnd: false, currentPeriodEnd: 0 };
   db = mergeData(acc.data);
@@ -1384,10 +1387,16 @@ function drawSnow(ctx, w, hh, e) {
     const x = (d.x + 0.015 * Math.sin(d.ph + d.y * 6)) * w;
     const y = d.y * hh;
     const r = 1 + d.z * 1.8;
-    ctx.fillStyle = `rgba(255,255,255,${0.25 + d.z * 0.4})`;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, 6.283);
-    ctx.fill();
+    ctx.strokeStyle = `rgba(255,255,255,${0.25 + d.z * 0.4})`;
+    ctx.lineWidth = Math.max(1, d.z * 1.4);
+    ctx.lineCap = 'round';
+    for (let a = 0; a < 6; a++) {
+      const angle = a * Math.PI / 3 + d.ph * 0.12;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(angle) * r * 2.8, y + Math.sin(angle) * r * 2.8);
+      ctx.stroke();
+    }
   }
   const box = $('#content')?.getBoundingClientRect();
   const cx = box ? box.left : 0;
@@ -2534,6 +2543,9 @@ const views = {
       h('input', { type: 'range', min, max, value: get(), onchange: (e) => { set(Number(e.target.value)); save(); } }));
     return [
       hero(h('h2', {}, 'Nastavitve')),
+      h('div', { class: 'setting' }, h('label', {}, 'Jezik / Language'),
+        h('select', { onchange: (e) => window.setLang(e.target.value) },
+          [['sl', 'Slovenščina'], ['en', 'English']].map(([v, n]) => h('option', { value: v, selected: window.getLang() === v ? 'selected' : null }, n)))),
       h('h3', {}, 'Posodobitve'),
       (() => {
         const status = h('span', {}, '');
