@@ -2965,8 +2965,10 @@ function drawFxMenu() {
       if (s.partyMode) {
         s.snow = false;
         s.particles = true;
+        s.theme = 'purple';
+        s.ambientCustom = '';
       }
-      applyAmbient();
+      applyTheme();
       startParticles();
       save(); drawFxMenu();
     } })),
