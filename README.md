@@ -36,29 +36,3 @@ Strežnik potrjuje Premium prek Stripe webhookov; stanje Premiuma se ne sprejema
 4. Za upravljanje oziroma preklic naročnin v Stripe omogoči Customer Portal. Po plačilu se vrni v aplikacijo in v profilu izberi **Osveži stanje**.
 
 Plačila ostanejo izklopljena, dokler zgornje Stripe nastavitve niso dodane na strežnik. Ključev Stripe ne dodajaj v repozitorij. Mobilno predvajanje v ozadju zahteva ločeno mobilno aplikacijo; trenutni projekt je namizna Electron aplikacija.
-
-## Discord bot: YouTube iskanje z lokalnim predvajanjem
-
-V mapi `discord-bot/` je ločen bot za ukaz `/play iskanje`. Najprej poišče
-skladbo na YouTube Music in uporabi najdeni naslov/izvajalca za iskanje ujemajoče
-se datoteke v `MUSIC_DIR`. Če datoteke ne najde, vrne YouTube Music povezavo,
-vendar zvoka ne predvaja. Če jo najde, se pridruži voice kanalu ukazovalca in
-predvaja lokalno datoteko s FFmpeg. Uporabljaj samo datoteke, za katere imate
-pravico do predvajanja v voice kanalu. To ne prenaša ali pretaka zvoka z
-YouTuba in ne uporablja Rythmifyjevega šifriranega offline imenika.
-
-1. Na Discord Developer Portalu ustvari bot aplikacijo, dodaj bot v strežnik z
-   dovoljenji `Connect`, `Speak` in `Use Application Commands`; omogoči voice
-   state intent, če ga portal zahteva.
-2. V `discord-bot/` namesti odvisnosti z `npm install`.
-3. Skopiraj `.env.example` v `.env` ter nastavi `DISCORD_TOKEN`,
-   `DISCORD_CLIENT_ID`, po želji `DISCORD_GUILD_ID` za takojšnjo registracijo
-   ukaza v testnem strežniku in `MUSIC_DIR` na mapo z dovoljenimi datotekami.
-   `.env` ni namenjen GitHubu.
-4. Zaženi `npm start` znotraj `discord-bot/`. V Discordu se pridruži voice
-   kanalu in uporabi na primer `/play iskanje: Calypso Reševalka`.
-
-Ime datoteke naj vsebuje najdeni naslov oziroma izvajalca, npr.
-`Calypso - Reševalka.mp3`. Če je več enako dobrih lokalnih zadetkov, bot zahteva
-natančnejše iskanje. Bot, FFmpeg in glasbene datoteke morajo biti dosegljivi
-istem računalniku/procesu; to ni Render servis.
