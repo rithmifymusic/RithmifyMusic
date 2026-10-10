@@ -2775,7 +2775,7 @@ function drawFxMenu() {
     h('div', { class: 'fxsec' }, 'Videz'),
     row('Tema', select(Object.entries(THEME_NAMES), () => s.theme, (v) => { s.theme = v; s.ambientCustom = ''; applyTheme(); drawFxMenu(); })),
     h('div', { class: 'fxsec' }, 'Ambient ozadje'),
-    row(h('span', {}, '🎄 Božični sneg ', h('span', { class: 'beta-badge' }, 'BETA')), h('input', { type: 'checkbox', checked: s.snow ? 'checked' : null, onchange: (e) => {
+    row(h('span', {}, '🎄 Božični način ', h('span', { class: 'beta-badge' }, 'BETA')), h('input', { type: 'checkbox', checked: s.snow ? 'checked' : null, onchange: (e) => {
       s.snow = e.target.checked;
       if (s.snow) {
         s.theme = 'green';

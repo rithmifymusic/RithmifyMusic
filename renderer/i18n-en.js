@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 window.I18N_EN = {
   // ----- index.html -----
@@ -452,7 +452,7 @@ window.I18N_EN = {
   'Slog': 'Style',
   'Videz': 'Appearance',
   'Ambient ozadje': 'Ambient background',
-  '🎄 Božični sneg': '🎄 Christmas snow',
+  '🎄 Božični način': '🎄 Christmas mode',
   'Barva': 'Color',
   'Poljubna barva': 'Custom color',
   'Utripanje z glasbo': 'Pulse with music',
