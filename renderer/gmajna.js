@@ -1334,29 +1334,32 @@ function drawSnow(ctx, w, hh, e) {
     }
   }
   const snow = (a) => `rgba(245,250,255,${a})`;
-  ctx.fillStyle = snow(0.95);
-  ctx.beginPath();
-  ctx.moveTo(0, hh);
-  for (let x = 0; x <= w; x += 12) ctx.lineTo(x, hh - 16 - 9 * Math.sin(x / 70) - 6 * Math.sin(x / 23 + 1));
-  ctx.lineTo(w, hh);
-  ctx.closePath();
-  ctx.fill();
-  for (const side of [0, 1]) {
-    ctx.fillStyle = snow(0.85);
-    ctx.beginPath();
-    for (let y = 0; y <= hh; y += 12) {
-      const wd = 6 + 4 * Math.sin(y / 55 + side * 2) + 3 * Math.sin(y / 17);
-      if (y === 0) ctx.moveTo(side ? w : 0, y); else ctx.lineTo(side ? w - wd : wd, y);
-    }
-    ctx.lineTo(side ? w : 0, hh);
-    ctx.closePath();
-    ctx.fill();
-  }
   const box = $('#content')?.getBoundingClientRect();
   const cx = box ? box.left : 0;
   const cw = box ? box.width : w;
   const cy = box && box.top > 0 ? box.top : 0;
-  ctx.fillStyle = snow(0.92);
+  const cb = box ? box.bottom : hh;
+  const sideH = cb - cy;
+  ctx.fillStyle = snow(0.95);
+  ctx.beginPath();
+  ctx.moveTo(cx, cb);
+  for (let x = 0; x <= cw; x += 12) ctx.lineTo(cx + x, cb - 14 - 7 * Math.sin(x / 70) - 5 * Math.sin(x / 23 + 1));
+  ctx.lineTo(cx + cw, cb);
+  ctx.closePath();
+  ctx.fill();
+  for (const side of [0, 1]) {
+    const edge = side ? cx + cw : cx;
+    ctx.fillStyle = snow(0.85);
+    ctx.beginPath();
+    ctx.moveTo(edge, cy);
+    for (let y = 0; y <= sideH; y += 12) {
+      const wd = 5 + 3 * Math.sin(y / 55 + side * 2) + 2 * Math.sin(y / 17);
+      ctx.lineTo(side ? edge - wd : edge + wd, cy + y);
+    }
+    ctx.lineTo(edge, cb);
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   for (let x = 0; x <= cw; x += 10) ctx.lineTo(cx + x, cy - 5 - 3 * Math.sin(x / 40) - 2 * Math.sin(x / 13));

@@ -19,6 +19,7 @@ const MIME = {
 
 let win;
 let port = 0;
+let httpServer = null;
 let dataFile;
 let offlineDir;
 let pendingJamInvite = null;
@@ -227,6 +228,7 @@ function startServer() {
     serveFile(req, res, target);
   });
   const SPOTIFY_PORT = 38457;
+  httpServer = server;
   return new Promise((resolve) => {
     const done = () => { port = server.address().port; resolve(); };
     server.once('error', () => server.listen(0, '127.0.0.1', done));
@@ -500,7 +502,7 @@ function setupUpdater() {
         type: 'info', buttons: ['Znova zaženi zdaj', 'Pozneje'], defaultId: 0,
         message: `Nova različica ${info.version} je pripravljena.`,
         detail: 'Posodobitev se namesti ob ponovnem zagonu aplikacije.',
-      }).then((r) => { if (r.response === 0) autoUpdater.quitAndInstall(); });
+      }).then((r) => { if (r.response === 0) autoUpdater.quitAndInstall(false, true); });
     });
     autoUpdater.on('error', (e) => console.error('updater', e.message));
     const checkForUpdates = () => autoUpdater.checkForUpdates().catch((e) => console.error('updater check failed:', e.message));
@@ -533,4 +535,9 @@ app.on('second-instance', (_event, commandLine) => {
   if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
 });
 app.on('will-quit', () => globalShortcut.unregisterAll());
+// Make sure no lingering process keeps the installer from replacing the app files.
+app.on('before-quit', () => {
+  try { httpServer?.closeAllConnections?.(); httpServer?.close(); } catch {}
+  setTimeout(() => app.exit(0), 2000).unref();
+});
 app.on('window-all-closed', () => app.quit());
