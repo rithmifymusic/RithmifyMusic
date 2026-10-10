@@ -1,0 +1,41 @@
+{
+  "name": "gmajna-music-priv",
+  "productName": "Rythmify",
+  "version": "0.1.0",
+  "description": "Private standalone music player",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis",
+    "release": "electron-builder --win nsis --publish always"
+  },
+  "build": {
+    "appId": "com.gmajna.musicpriv",
+    "protocols": [{ "name": "Rythmify Jam invitation", "schemes": ["gmajna"] }],
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "publish": [{ "provider": "github", "owner": "rithmifymusic", "repo": "RithmifyMusic", "releaseType": "release" }],
+    "win": {
+      "icon": "renderer/img/rythmify.ico",
+      "artifactName": "Rythmify-Setup-${version}.${ext}",
+      "target": "nsis",
+      "signAndEditExecutable": false
+    },
+    "nsis": { "oneClick": true, "perMachine": false }
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.8.0",
+    "@ghostery/adblocker-electron-preload": "^2.8.0",
+    "cross-fetch": "^4.1.0",
+    "electron-updater": "^6.8.9",
+    "socket.io-client": "^4.8.4"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

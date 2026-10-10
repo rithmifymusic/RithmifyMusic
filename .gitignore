@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out.txt
+err.txt
+*.log
+.env
+.env.*
+!.env.example
