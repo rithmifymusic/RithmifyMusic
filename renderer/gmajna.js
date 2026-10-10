@@ -1851,7 +1851,7 @@ function npVizLoop() {
   ctx.shadowBlur = 8;
   const seg = (a, b, ph) => {
     const depth = (a[2] + b[2]) / 2;
-    const hh2 = (hue + 70 * Math.sin(ph + npRot) + 40) % 360;
+    const hh2 = (hue + 16 * Math.sin(ph + npRot) + 4) % 360;
     ctx.strokeStyle = `hsla(${hh2},90%,${62 - depth * 14}%,${0.8 - depth * 0.35})`;
     ctx.shadowColor = `hsl(${hh2},100%,60%)`;
     ctx.beginPath();
@@ -1882,7 +1882,7 @@ function npVizLoop() {
   for (const d of npDots) {
     const e = npSm[d.b % n] || 0;
     const q = vert(d.th, d.ph + npTime * 0.1, 1.18 + d.k * 0.3 + e * 0.25);
-    ctx.fillStyle = `hsla(${(hue + 70 * Math.sin(d.ph + npRot) + 40) % 360},95%,70%,${0.25 + e * 0.5})`;
+    ctx.fillStyle = `hsla(${(hue + 16 * Math.sin(d.ph + npRot) + 4) % 360},95%,70%,${0.25 + e * 0.5})`;
     ctx.fillRect(q[0], q[1], 1.6, 1.6);
   }
   drawNpBottomViz();
@@ -1901,25 +1901,25 @@ function drawNpBottomViz() {
   const playing = cur && isPlaying();
   const energy = Math.min(1, Math.max(0.08, npPulse * 1.4 + (playing ? 0.12 : 0)));
   const layers = [
-    { offset: 0.72, amp: 0.12, hue: hue, alpha: 0.34 },
-    { offset: 0.62, amp: 0.16, hue: hue + 38, alpha: 0.48 },
-    { offset: 0.51, amp: 0.18, hue: hue + 78, alpha: 0.62 },
-    { offset: 0.42, amp: 0.13, hue: hue + 150, alpha: 0.42 },
+    { offset: 0.72, amp: 0.12, hue: hue - 12, alpha: 0.34 },
+    { offset: 0.62, amp: 0.16, hue: hue - 4, alpha: 0.48 },
+    { offset: 0.51, amp: 0.18, hue: hue + 6, alpha: 0.62 },
+    { offset: 0.42, amp: 0.13, hue: hue + 16, alpha: 0.42 },
   ];
   for (let layer = 0; layer < layers.length; layer++) {
     const item = layers[layer];
     const baseY = hh * item.offset;
     const amp = hh * item.amp * (0.72 + energy * 0.85);
     const points = [];
-    for (let i = 0; i <= 90; i++) {
-      const x = (i / 90) * w;
+    const waveAt = (i) => {
       const band = npSm[(i * 3 + layer * 5) % npSm.length] || 0;
-      const y = baseY
+      return baseY
         + Math.sin(i * 0.16 + npTime * (1.2 + layer * 0.16)) * amp * 0.42
         + Math.sin(i * 0.055 - npTime * 0.7 + layer) * amp * 0.54
         + band * amp * 0.32;
-      points.push([x, y]);
-    }
+    };
+    for (let i = 0; i <= 45; i++) points.push([(i / 90) * w, waveAt(i)]);
+    for (let i = 44; i >= 0; i--) points.push([w - (i / 90) * w, waveAt(i)]);
     const color = `hsla(${(item.hue + npTime * 4) % 360},95%,65%,${item.alpha})`;
     const gradient = ctx.createLinearGradient(0, baseY - amp, 0, hh);
     gradient.addColorStop(0, `hsla(${(item.hue + 12) % 360},95%,65%,${item.alpha * 0.7})`);
@@ -2881,9 +2881,11 @@ const views = {
       onclick: () => togglePlay(),
     });
     mainPlay.innerHTML = isPlaying() && current ? ICON.pause : ICON.play;
+    const stationFlag = h('div', { class: 'station-flag-emblem', 'aria-hidden': 'true' });
+    stationFlag.innerHTML = ICON.slovenia;
     return [
       h('section', { class: 'station-hero' },
-        h('div', { class: 'station-flag-emblem', 'aria-hidden': 'true' }, ICON.slovenia),
+        stationFlag,
         h('div', { class: 'station-kicker' }, h('span', { class: 'station-live-dot' }), ' SLOVENIJA · RADIO V ŽIVO'),
         h('div', { class: 'station-hero-copy' },
           h('div', {},
