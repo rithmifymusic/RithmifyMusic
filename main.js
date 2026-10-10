@@ -344,6 +344,46 @@ ipcMain.handle('yt:search', async (_e, query) => {
   return out;
 });
 
+// Synced lyrics from LRCLIB (free, no key). Titles from YouTube are noisy, so try a few cleaned variants.
+ipcMain.handle('lyrics:get', async (_e, { title, artist, duration } = {}) => {
+  const clean = (s) => String(s || '').replace(/\s*[(\[][^)\]]*[)\]]/g, '').replace(/\b(official|video|audio|lyrics?|hd|4k|mv)\b/gi, '')
+    .replace(/\s*(ft\.?|feat\.?)\s.*$/i, '').replace(/\s+/g, ' ').trim();
+  const cleanArtist = (s) => String(s || '').replace(/\s*-\s*topic$/i, '').replace(/vevo$/i, '').replace(/\s+/g, ' ').trim();
+  const attempts = [];
+  const t0 = clean(title);
+  const a0 = cleanArtist(artist);
+  const parts = String(title || '').split(/\s[-–]\s/);
+  if (parts.length >= 2) attempts.push({ artist: clean(parts[0]), title: clean(parts.slice(1).join(' ')) });
+  attempts.push({ artist: a0, title: t0 });
+  const headers = { 'User-Agent': 'Rythmify (https://github.com/rithmifymusic/RithmifyMusic)' };
+  const get = async (url) => {
+    try {
+      const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+      return r.ok ? await r.json() : null;
+    } catch { return null; }
+  };
+  const best = (list) => {
+    const withSync = (Array.isArray(list) ? list : []).filter((x) => x && x.syncedLyrics);
+    if (!withSync.length) return null;
+    if (!duration) return withSync[0];
+    return withSync.sort((x, y) => Math.abs((x.duration || 0) - duration) - Math.abs((y.duration || 0) - duration))[0];
+  };
+  let plain = '';
+  for (const a of attempts) {
+    if (!a.title) continue;
+    const q = new URLSearchParams({ track_name: a.title });
+    if (a.artist) q.set('artist_name', a.artist);
+    let hit = best(await get(`https://lrclib.net/api/search?${q}`));
+    if (!hit) hit = best(await get(`https://lrclib.net/api/search?${new URLSearchParams({ q: `${a.artist} ${a.title}`.trim() })}`));
+    if (hit) return { synced: hit.syncedLyrics, plain: hit.plainLyrics || '' };
+    if (!plain) {
+      const any = await get(`https://lrclib.net/api/search?${q}`);
+      plain = (Array.isArray(any) && any.find((x) => x.plainLyrics)?.plainLyrics) || '';
+    }
+  }
+  return plain ? { synced: '', plain } : null;
+});
+
 ipcMain.handle('yt:videoSearch', async (_e, query) => {
   const r = await fetch('https://www.youtube.com/youtubei/v1/search?prettyPrint=false', {
     method: 'POST',

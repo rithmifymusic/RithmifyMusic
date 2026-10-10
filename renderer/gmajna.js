@@ -1734,7 +1734,10 @@ function renderSidePanel() {
     ? upcoming.slice(0, 60).map((t) => h('div', { class: 'qrow', onclick: () => { qIndex = queue.indexOf(t); playTrack(t); } },
       coverEl(t), h('div', { style: 'min-width:0' }, h('div', { class: 'qt' }, t.title), h('div', { class: 'qa' }, t.artist))))
     : [h('div', { class: 'note' }, smart && plQueue ? 'Pametno naključno bo kmalu dodalo skladbe.' : 'Ni naslednjih skladb.')];
-  const lyr = h('details', { class: 'lyr' }, h('summary', {}, 'Besedilo'), area);
+  const lyr = h('div', { class: 'lyr' },
+    h('div', { class: 'lyr-head' }, h('b', {}, 'Besedilo'), btn('Čez cel zaslon', openLyricsFull, 'btn sec')),
+    lyricsBox('side-box'),
+    h('details', {}, h('summary', {}, 'Dodaj svoje besedilo'), area));
   p.append(coverEl(cur, 'big'), h('div', { class: 'st' }, cur.title), h('div', { class: 'sa' }, cur.artist),
     h('h3', { class: 'qh' }, 'Naslednje'), h('div', { class: 'qlist' }, nextList), lyr);
 }
