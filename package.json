@@ -1,7 +1,7 @@
 {
   "name": "gmajna-music-priv",
   "productName": "Rythmify",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Private standalone music player",
   "main": "main.js",
   "scripts": {

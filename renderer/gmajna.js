@@ -35,7 +35,7 @@ const ICON = {
   heartO: svg('M16.5 3c-1.7 0-3.4.8-4.5 2.1C10.9 3.8 9.2 3 7.5 3 4.4 3 2 5.4 2 8.5c0 3.4 3.4 6.5 8.5 11.1L12 21l1.5-1.4C18.6 15 22 11.900 22 8.500 22 5.400 19.600 3 16.500 3zm-4.400 15.500-.100.100-.100-.100C7.400 14.400 4 11.400 4 8.500 4 6.500 5.500 5 7.500 5c1.500 0 3 1 3.500 2.400h2C13.500 6 15 5 16.500 5c2 0 3.500 1.500 3.500 3.500 0 2.900-3.400 5.900-7.900 10z'),
   plus: svg('M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z'),
   home: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/></svg>',
-  podcast: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="13" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>',
+  podcast: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>',
   radio: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/></svg>',
   viz: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/></svg>',
   lyr: svg('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z'),
@@ -294,20 +294,23 @@ function mergeData(data) {
   const base = defaultDb();
   const d = data || {};
   const podcastCreators = new Map();
-  const addPodcast = (show, creatorName) => {
+  const addPodcast = (show, creatorName, creatorSource) => {
     if (!show || !show.id) return;
     const name = String(creatorName || show.artist || show.creator || show.title || 'Podcast').trim() || 'Podcast';
-    const id = name.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ');
+    const source = creatorSource || show.creatorSource || (show.type === 'yt' ? 'youtube' : 'apple');
+    const id = podcastCreatorId({ ...show, artist: name }, source);
     let creator = podcastCreators.get(id);
     if (!creator) {
-      creator = { id, name, shows: [] };
+      creator = { id, name, source, shows: [] };
       podcastCreators.set(id, creator);
     }
-    const normalizedShow = { ...show, id: String(show.id) };
+    const normalizedShow = { ...show, id: String(show.id), creatorSource: source };
     if (!creator.shows.some((item) => String(item.id) === normalizedShow.id)) creator.shows.push(normalizedShow);
   };
   for (const creator of Array.isArray(d.podcastCreators) ? d.podcastCreators : []) {
-    for (const show of Array.isArray(creator.shows) ? creator.shows : []) addPodcast(show, creator.name);
+    for (const show of Array.isArray(creator.shows) ? creator.shows : []) {
+      addPodcast(show, creator.name, creator.source);
+    }
   }
   for (const show of Array.isArray(d.podcasts) ? d.podcasts : []) addPodcast(show);
   const savedSettings = d.settings || {};
@@ -2341,9 +2344,14 @@ async function searchPodcasts(query, source = podcastSearch.source) {
   }
 }
 
-function podcastCreatorId(show) {
-  return String(show.artist || show.creator || show.title || 'Podcast')
+function podcastCreatorSource(show) {
+  return show.creatorSource || (show.type === 'yt' ? 'youtube' : 'apple');
+}
+
+function podcastCreatorId(show, source = podcastCreatorSource(show)) {
+  const name = String(show.artist || show.creator || show.title || 'Podcast')
     .normalize('NFKC').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+  return `${source}:${name}`;
 }
 
 function followedPodcastCreator(show) {
@@ -2352,20 +2360,26 @@ function followedPodcastCreator(show) {
 }
 
 function followPodcastCreator(show) {
-  const id = podcastCreatorId(show);
+  const source = podcastCreatorSource(show);
+  const id = podcastCreatorId(show, source);
   const name = String(show.artist || show.creator || show.title || 'Podcast').trim() || 'Podcast';
   let creator = db.podcastCreators.find((item) => item.id === id);
   if (!creator) {
-    creator = { id, name, shows: [] };
+    creator = { id, name, source, shows: [] };
     db.podcastCreators.push(creator);
   }
-  const item = { ...show, id: String(show.id), cover: show.cover || show.artwork || '' };
-  if (!creator.shows.some((saved) => String(saved.id) === item.id)) creator.shows.push(item);
+  const candidates = source === 'youtube' && podcastSearch.source === 'youtube'
+    ? podcastSearch.results.filter((track) => podcastCreatorId(track, source) === id)
+    : [show];
+  for (const candidate of candidates) {
+    const item = { ...candidate, id: String(candidate.id), creatorSource: source, cover: candidate.cover || candidate.artwork || '' };
+    if (!creator.shows.some((saved) => String(saved.id) === item.id)) creator.shows.push(item);
+  }
   save();
   renderAll();
-  toast(creator.shows.length > 1
-    ? 'Oddaja dodana med tvoje podcaste.'
-    : 'Slediš ustvarjalcu.');
+  toast(source === 'youtube'
+    ? 'Slediš YouTube kanalu.'
+    : creator.shows.length > 1 ? 'Oddaja dodana med tvoje podcaste.' : 'Slediš ustvarjalcu.');
 }
 
 function unfollowPodcastCreator(creatorId) {
@@ -2381,10 +2395,21 @@ function openPodcast(show) {
   renderAll();
 }
 
+function podcastFollowButton(show, row = false) {
+  const creator = followedPodcastCreator(show);
+  const following = creator?.shows.some((saved) => String(saved.id) === String(show.id));
+  return h('button', {
+    class: `podcast-subscribe${row ? ' podcast-follow-row' : ''}`,
+    onclick: (event) => {
+      event.stopPropagation();
+      if (following) unfollowPodcastCreator(creator.id);
+      else followPodcastCreator(show);
+    },
+  }, creator ? (following ? 'Slediš' : 'Dodaj oddajo') : show.type === 'yt' ? 'Sledi kanalu' : 'Sledi ustvarjalcu');
+}
+
 function podcastCard(show, showFollowControl = true) {
   const item = { ...show, cover: show.cover || show.artwork || '' };
-  const creator = followedPodcastCreator(item);
-  const showIsFollowed = creator?.shows.some((saved) => String(saved.id) === String(item.id));
   return h('div', {
     class: 'card podcast-card',
     onclick: () => openPodcast(item),
@@ -2393,17 +2418,26 @@ function podcastCard(show, showFollowControl = true) {
   coverEl(item, 'podcast-cover'),
   h('div', { class: 'ct' }, item.title),
   h('div', { class: 'ca' }, item.artist || item.genre || 'Podcast'),
-  showFollowControl ? h('button', {
-    class: 'podcast-subscribe',
-    onclick: (event) => {
-      event.stopPropagation();
-      if (creator && showIsFollowed) unfollowPodcastCreator(creator.id);
-      else followPodcastCreator(item);
-    },
-  }, creator ? (showIsFollowed ? 'Slediš' : 'Dodaj oddajo') : 'Sledi ustvarjalcu') : null);
+  showFollowControl ? podcastFollowButton(item) : null);
 }
 
 function podcastShowView(show) {
+  if (show.type === 'yt' || show.creatorSource === 'youtube') {
+    const creator = followedPodcastCreator(show);
+    const videos = creator?.shows.filter((item) => item.type === 'yt') || [show];
+    return [
+      hero(h('h2', {}, creator?.name || show.artist || 'YouTube'),
+        h('div', { class: 'note' }, 'YouTube kanal · ', videos.length, ' videov'),
+        h('div', { class: 'toolbar' },
+          podcastFollowButton(show),
+          h('button', { class: 'btn sec', onclick: () => window.gmajna.openExternal(`https://www.youtube.com/watch?v=${encodeURIComponent(show.videoId)}`) }, 'Odpri na YouTubu'))),
+      h('h3', {}, 'Videi tega kanala'),
+      videos.length
+        ? h('div', { class: 'toolbar' }, btn('▶ Predvajaj videe', () => playFrom(videos, videos[0]), 'btn'))
+        : null,
+      ...trackRows(videos, 'Za ta kanal še ni shranjenih videov.'),
+    ];
+  }
   const cachedEpisodes = podcastEpisodesCache.get(String(show.id));
   const content = h('div', { class: 'note' }, cachedEpisodes ? '' : 'Nalaganje epizod …');
   const renderEpisodes = (episodes) => content.replaceChildren(
@@ -2689,7 +2723,7 @@ const views = {
         podcastSearch.results.length
           ? podcastSearch.source === 'youtube'
             ? h('div', { class: 'podcast-episode-results' },
-              ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.'))
+              ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.', (track) => podcastFollowButton(track, true)))
             : h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
               return podcastCard(show);
             }))
@@ -2710,7 +2744,8 @@ const views = {
         db.podcastCreators.length
           ? db.podcastCreators.map((creator) => h('div', { class: 'podcast-creator-group' },
             h('div', { class: 'podcast-creator-heading' },
-              h('div', {}, h('h4', {}, creator.name), h('small', {}, 'Ustvarjalec podcasta')),
+              h('div', {}, h('h4', {}, creator.name),
+                h('small', {}, creator.source === 'youtube' ? 'YouTube kanal' : 'Ustvarjalec podcasta')),
               btn('Ne sledi več', () => unfollowPodcastCreator(creator.id), 'btn sec')),
             h('div', { class: 'grid podcast-grid' },
               creator.shows.map((show) => podcastCard(show, false)))))
@@ -3244,7 +3279,7 @@ async function logoutAfterDelete() {
 
 function renderSidebar() {
   const nav = (v, icon, bg, title, sub, arg) => h('button', {
-    class: `nav${v === 'podcasts' ? ' podcast-nav' : ''}${view === v && (viewArg || null) === (arg || null) ? ' active' : ''}`,
+    class: 'nav' + (view === v && (viewArg || null) === (arg || null) ? ' active' : ''),
     title,
     onclick: () => { view = v; viewArg = arg || null; renderAll(); },
   }, h('span', { class: 'ico', style: `background:${bg}` }, icon), h('span', {}, h('b', {}, title), h('small', {}, sub)));
