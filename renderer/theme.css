@@ -498,6 +498,21 @@ body.np #particles{z-index:35}
 #np .np-right .np-sh{flex:none}
 
 /* Christmas look (snow toggle) */
+body.xmas{--xmas-green:#0d3528;--xmas-deep:#061b16;background:radial-gradient(circle at 72% 16%,#1e6848 0,#0b2e24 34%,#061b16 100%)}
+body.xmas #app{background:transparent}
+body.xmas #sidebar,body.xmas #content,body.xmas #side-panel{background:linear-gradient(135deg,rgba(5,34,25,.93),rgba(9,53,38,.82));backdrop-filter:blur(16px)}
+body.xmas #content{background:linear-gradient(180deg,rgba(9,63,43,.72),rgba(4,28,22,.88))}
+body.xmas #content .hero{background:linear-gradient(180deg,rgba(24,105,67,.62),rgba(7,47,33,.12) 86%,transparent)}
+body.xmas #player{background:linear-gradient(180deg,rgba(166,215,224,.9),rgba(102,174,190,.88));border-top:1px solid rgba(238,255,255,.72);color:#092b27}
+body.xmas #player button,body.xmas #pos,body.xmas #dur{color:#155048}
+body.xmas #player button:hover{color:#062f27}
+body.xmas #player #btn-play{background:#f7e4a6!important;color:#17352a!important;box-shadow:0 0 18px rgba(255,235,164,.72)}
 body.xmas .card::before{content:'';position:absolute;left:14px;right:14px;top:8px;height:6px;border-radius:8px 8px 3px 3px;background:rgba(245,250,255,.85);z-index:2;pointer-events:none}
+body.xmas .card,body.xmas .tile{background:rgba(255,255,255,.1)}
+body.xmas .card:hover,body.xmas .tile:hover{background:rgba(255,255,255,.18)}
+body.xmas .nav.active{background:rgba(43,126,83,.48)}
 body.xmas #sidebar .nav.on,body.xmas .tile{box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-body.xmas #player{border-top:1px solid rgba(255,255,255,.25)}
+body.xmas #app::before,body.xmas #app::after{content:'';position:fixed;z-index:16;pointer-events:none}
+body.xmas #app::before{right:0;top:63px;width:240px;height:26px;border-top:3px solid rgba(238,248,247,.8);background:repeating-linear-gradient(110deg,transparent 0 12px,rgba(239,250,249,.9) 13px 16px,transparent 17px 32px);clip-path:polygon(0 0,100% 0,100% 100%,94% 50%,88% 100%,82% 48%,76% 100%,70% 42%,64% 100%,58% 48%,52% 100%,46% 44%,40% 100%,34% 50%,28% 100%,22% 47%,16% 100%,10% 52%,4% 100%,0 50%)}
+body.xmas #app::after{left:calc(var(--sidebar-width) + 12px);top:54px;width:calc(100vw - var(--sidebar-width) - 24px);height:3px;background:linear-gradient(90deg,#d9f5e7 0 18%,#e6bc52 18% 20%,#d9f5e7 20% 43%,#bf4350 43% 45%,#d9f5e7 45% 70%,#e6bc52 70% 72%,#d9f5e7 72%);box-shadow:0 0 12px rgba(213,244,232,.55)}
+body.xmas #app::after{border-radius:50%;filter:drop-shadow(0 0 4px rgba(255,237,161,.9))}

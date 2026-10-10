@@ -2766,8 +2766,18 @@ function drawFxMenu() {
     h('div', { class: 'fxsec' }, 'Ambient ozadje'),
     row('🎄 Božični sneg', h('input', { type: 'checkbox', checked: s.snow ? 'checked' : null, onchange: (e) => {
       s.snow = e.target.checked;
-      if (s.snow && s.particles === false) s.particles = true;
-      save(); startParticles(); drawFxMenu();
+      if (s.snow) {
+        s.theme = 'green';
+        s.ambientCustom = '';
+        s.ambient = true;
+        s.particles = true;
+        applyTheme();
+        startParticles();
+      } else {
+        startParticles();
+        applyAmbient();
+      }
+      save(); drawFxMenu();
     } })),
     row('Ambient', h('input', { type: 'checkbox', checked: s.ambient ? 'checked' : null, onchange: (e) => { s.ambient = e.target.checked; applyAmbient(); save(); } })),
     row('Barva', h('div', { class: 'swatches' },
