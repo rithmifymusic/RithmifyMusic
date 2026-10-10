@@ -503,11 +503,49 @@ function showAuth(mode = root.accounts.length ? 'login' : 'register') {
   draw();
 }
 
+function avatarBg(prof) {
+  const p = prof.avatarPos || { x: 50, y: 50, zoom: 1, ratio: 1 };
+  const z = Math.round(p.zoom * 100);
+  const size = (p.ratio || 1) >= 1 ? `auto ${z}%` : `${z}% auto`;
+  return `url(${prof.avatar}) ${p.x}% ${p.y}%/${size} no-repeat`;
+}
+function adjustAvatar(prof, done) {
+  const pos = { x: 50, y: 50, zoom: 1, ratio: 1, ...(prof.avatarPos || {}) };
+  const prev = h('div', { style: 'width:220px;height:220px;border-radius:50%;margin:0 auto 14px;cursor:grab;touch-action:none;background-color:#222' });
+  const apply = () => {
+    prev.style.background = avatarBg({ avatar: prof.avatar, avatarPos: pos });
+  };
+  const cover = () => (pos.ratio >= 1 ? { w: 220 * pos.ratio, h: 220 } : { w: 220, h: 220 / pos.ratio });
+  let drag = null;
+  prev.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y }; prev.setPointerCapture(e.pointerId); prev.style.cursor = 'grabbing'; });
+  prev.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const c = cover();
+    const ow = Math.max(1, c.w * pos.zoom - 220), oh = Math.max(1, c.h * pos.zoom - 220);
+    pos.x = Math.min(100, Math.max(0, drag.px - ((e.clientX - drag.x) / ow) * 100));
+    pos.y = Math.min(100, Math.max(0, drag.py - ((e.clientY - drag.y) / oh) * 100));
+    apply();
+  });
+  prev.addEventListener('pointerup', () => { drag = null; prev.style.cursor = 'grab'; });
+  const zoom = h('input', { type: 'range', min: '100', max: '300', value: String(Math.round(pos.zoom * 100)), style: 'width:100%' });
+  zoom.addEventListener('input', () => { pos.zoom = Number(zoom.value) / 100; apply(); });
+  const close = () => overlay.remove();
+  const overlay = h('div', { style: 'position:fixed;inset:0;background:#000a;z-index:100;display:grid;place-items:center' },
+    h('div', { style: 'background:#18181b;padding:22px;border-radius:14px;width:300px' },
+      h('div', { class: 'note', style: 'text-align:center;margin-bottom:10px' }, 'Povleci sliko in nastavi povečavo'),
+      prev, zoom,
+      h('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' },
+        btn('Shrani', () => { prof.avatarPos = pos; close(); done(); }, 'btn'),
+        btn('Prekliči', close, 'btn sec'))));
+  apply();
+  document.body.append(overlay);
+}
+
 function updateAvatar() {
   const b = $('#avatar-btn');
   const pic = account && db && db.profile && db.profile.avatar;
   b.textContent = pic ? '' : account ? account.name[0].toUpperCase() : '';
-  b.style.background = pic ? `center/cover url(${pic})` : account ? account.color : '#444';
+  b.style.background = pic ? avatarBg(db.profile) : account ? account.color : '#444';
   $('#profile-name').textContent = account ? account.name : '';
 }
 
@@ -1105,12 +1143,20 @@ function playlistIcon(p, cls = 'cover') {
   return covers.length ? collageEl(covers, cls) : coverEl({ title: p.name }, cls);
 }
 
-function imageToDataUrl(file, size = 256) {
+function imageToDataUrl(file, size = 256, keepAspect = false) {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       const c = document.createElement('canvas');
+      if (keepAspect) {
+        const k = Math.min(1, size / Math.max(img.width, img.height));
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve({ url: c.toDataURL('image/jpeg', 0.85), ratio: c.width / c.height });
+        return;
+      }
       c.width = c.height = size;
       const s = Math.min(img.width, img.height);
       c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
@@ -2410,11 +2456,12 @@ const views = {
     const prof = db.profile = db.profile || {};
     const picInput = h('input', { type: 'file', accept: 'image/*', hidden: true });
     picInput.addEventListener('change', async () => {
-      const url = picInput.files[0] && await imageToDataUrl(picInput.files[0], 320);
-      if (!url) { toast('Slike ni mogoče naložiti.'); return; }
-      prof.avatar = url; save(); updateAvatar(); renderAll();
+      const res = picInput.files[0] && await imageToDataUrl(picInput.files[0], 700, true);
+      if (!res) { toast('Slike ni mogoče naložiti.'); return; }
+      prof.avatar = res.url; prof.avatarPos = { x: 50, y: 50, zoom: 1, ratio: res.ratio }; save(); updateAvatar(); renderAll();
+      adjustAvatar(prof, () => { save(); updateAvatar(); renderAll(); });
     });
-    const av = h('div', { class: 'profile-av', style: prof.avatar ? `background:center/cover url(${prof.avatar})` : `background:${account.color}` }, prof.avatar ? '' : account.name[0].toUpperCase());
+    const av = h('div', { class: 'profile-av', style: prof.avatar ? `background:${avatarBg(prof)}` : `background:${account.color}` }, prof.avatar ? '' : account.name[0].toUpperCase());
     const myMixes = [
       { key: 'my', title: 'Moj miks', sub: 'Iz tvojih všečkov in zgodovine', local: myMixTracks },
       ...topArtists(4).map((a) => ({ key: `a:${a}`, title: `Miks: ${a}`, sub: 'Podobna glasba', q: [a], artist: a })),
@@ -2450,6 +2497,7 @@ const views = {
         }, 'btn sec')),
       h('div', { class: 'toolbar' }, picInput,
         btn('Spremeni sliko', () => picInput.click(), 'btn sec'),
+        prof.avatar ? btn('Nastavi položaj', () => adjustAvatar(prof, () => { save(); updateAvatar(); renderAll(); }), 'btn sec') : null,
         btn('Odstrani sliko', () => { delete prof.avatar; save(); updateAvatar(); renderAll(); }, 'btn sec'),
         btn('Opis', async () => { const v = await ask('Opis profila', prof.bio || ''); if (v === null || v === undefined) return; prof.bio = v.trim().slice(0, 200); save(); render(); }, 'btn sec'),
         btn('Stanje', async () => { const v = await ask('Kaj trenutno poslušaš / razpoloženje', prof.status || ''); if (v === null || v === undefined) return; prof.status = v.trim().slice(0, 60); save(); render(); }, 'btn sec')),
