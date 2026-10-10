@@ -618,12 +618,14 @@ function ensureAudioGraph() {
   analyser = audioCtx.createAnalyser();
   analyser.fftSize = 512;
   analyser.smoothingTimeConstant = 0.82;
-  deckGain = audioEls.map((el) => {
+  const analysisEls = [...audioEls, radioAudio, podcastAudio];
+  const analysisGains = analysisEls.map((el) => {
     el.crossOrigin = 'anonymous';
     const gain = audioCtx.createGain();
     audioCtx.createMediaElementSource(el).connect(gain).connect(bass);
     return gain;
   });
+  deckGain = analysisGains.slice(0, audioEls.length);
   bass.connect(mid).connect(treble).connect(compressor).connect(analyser).connect(audioCtx.destination);
   eqNodes = { bass, mid, treble };
   applyEq();
@@ -1667,7 +1669,7 @@ function pLoop() {
   ctx.clearRect(0, 0, w, hh);
   let e = 0;
   if (cur && isPlaying()) {
-    if (analyser && !audio.paused) {
+    if (analyser && cur && !ytActive() && !activeAudio().paused) {
       analyser.getByteFrequencyData(vizData);
       for (let i = 0; i < 6; i++) e += vizData[i] / 255 / 6;
     } else e = 0.25 + 0.15 * Math.sin(pT * 2);
@@ -1812,19 +1814,19 @@ function npVizLoop() {
   ctx.clearRect(0, 0, w, hh);
   const n = 32;
   const data = new Float32Array(n);
-  if (cur && analyser && !audio.paused) {
+  if (cur && analyser && !ytActive() && !activeAudio().paused) {
     analyser.getByteFrequencyData(vizData);
     for (let i = 0; i < n; i++) data[i] = vizData[Math.floor((i / n) * 140)] / 255;
   } else if (cur && isPlaying()) {
-    npPhase += 0.08;
-    for (let i = 0; i < n; i++) data[i] = 0.3 + 0.22 * Math.sin(npPhase + i * 0.45) + 0.12 * Math.sin(npPhase * 1.7 + i * 0.2);
+    npPhase += 0.14;
+    for (let i = 0; i < n; i++) data[i] = 0.3 + 0.24 * Math.sin(npPhase + i * 0.45) + 0.16 * Math.sin(npPhase * 1.7 + i * 0.2);
   }
-  for (let i = 0; i < n; i++) npSm[i] += (data[i] - npSm[i]) * 0.5;
+  for (let i = 0; i < n; i++) npSm[i] += (data[i] - npSm[i]) * 0.68;
   let bass = 0;
   for (let i = 0; i < 5; i++) bass += npSm[i] / 5;
   npPulse += (bass - npPulse) * 0.4;
   npRot += 0.012 + npPulse * 0.05 + (cur && isPlaying() ? 0.006 : 0);
-  npTime += 0.035 + npPulse * 0.05;
+  npTime += 0.045 + npPulse * 0.12;
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
   const hue = hexHue(accent);
   const R = Math.min(w, hh) * 0.25 * (1 + npPulse * 0.12);
@@ -1885,9 +1887,9 @@ function npVizLoop() {
     ctx.fillStyle = `hsla(${(hue + 16 * Math.sin(d.ph + npRot) + 4) % 360},95%,70%,${0.25 + e * 0.5})`;
     ctx.fillRect(q[0], q[1], 1.6, 1.6);
   }
-  drawNpBottomViz();
+  drawNpBottomViz(data);
 }
-function drawNpBottomViz() {
+function drawNpBottomViz(data) {
   const c = npRefs.bottomViz;
   if (!c) return;
   const w = c.clientWidth;
@@ -1899,7 +1901,7 @@ function drawNpBottomViz() {
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
   const hue = hexHue(accent);
   const playing = cur && isPlaying();
-  const energy = Math.min(1, Math.max(0.08, npPulse * 1.4 + (playing ? 0.12 : 0)));
+  const energy = Math.min(1, Math.max(0.08, npPulse * 1.8 + (playing ? 0.16 : 0)));
   const layers = [
     { offset: 0.72, amp: 0.12, hue: hue - 12, alpha: 0.34 },
     { offset: 0.62, amp: 0.16, hue: hue - 4, alpha: 0.48 },
@@ -1912,11 +1914,12 @@ function drawNpBottomViz() {
     const amp = hh * item.amp * (0.72 + energy * 0.85);
     const points = [];
     const waveAt = (i) => {
-      const band = npSm[(i * 3 + layer * 5) % npSm.length] || 0;
+      const bandIndex = (i * 3 + layer * 5) % npSm.length;
+      const band = ((data[bandIndex] || 0) * 0.72) + ((npSm[bandIndex] || 0) * 0.28);
       return baseY
-        + Math.sin(i * 0.16 + npTime * (1.2 + layer * 0.16)) * amp * 0.42
-        + Math.sin(i * 0.055 - npTime * 0.7 + layer) * amp * 0.54
-        + band * amp * 0.32;
+        + Math.sin(i * 0.16 + npTime * (1.5 + layer * 0.2)) * amp * 0.4
+        + Math.sin(i * 0.055 - npTime * 0.9 + layer) * amp * 0.5
+        + band * amp * 0.62;
     };
     for (let i = 0; i <= 45; i++) points.push([(i / 90) * w, waveAt(i)]);
     for (let i = 44; i >= 0; i--) points.push([w - (i / 90) * w, waveAt(i)]);
@@ -3459,7 +3462,7 @@ setInterval(() => {
   const s = db.settings;
   if (!s.ambient || !s.ambientPulse) { document.body.style.setProperty('--pulse', '0'); return; }
   let level = 0;
-  if (analyser && cur && !audio.paused) {
+  if (analyser && cur && !ytActive() && !activeAudio().paused) {
     const d = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(d);
     let sum = 0;
@@ -3613,7 +3616,7 @@ let vizRaf = 0;
 const vizData = new Uint8Array(256);
 let vizPhase = 0;
 function vizSample() {
-  if (cur && analyser && !audio.paused) return true;
+  if (cur && analyser && !ytActive() && !activeAudio().paused) return true;
   return false;
 }
 function vizLoop() {
