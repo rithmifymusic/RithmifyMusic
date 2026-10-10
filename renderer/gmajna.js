@@ -39,6 +39,8 @@ const ICON = {
   podcast: lineIcon('<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/>'),
   radio: lineIcon('<path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/>'),
   radioStation: lineIcon('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/>'),
+  slovenia: lineIcon('<path d="M6.5 20.5h11l-1.1-4.5-2.2-2.8-2.2 2.1-2-3.2-2.4 3.2z"/><path d="M6.5 20.5h11M5.5 9.5a6.5 6.5 0 0 0 13 0"/><path d="M8 7.2 9 6l1 1.2L11 6l1 1.2L13 6l1 1.2L15 6l1 1.2M7 4.5v2m10-2v2"/>'),
+  viz: lineIcon('<path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/>'),
   liked: lineIcon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/>'),
   download: lineIcon('<path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 17v4h14v-4"/>'),
   history: lineIcon('<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5m4-1v5l3 2"/>'),
@@ -2806,6 +2808,7 @@ const views = {
     mainPlay.innerHTML = isPlaying() && current ? ICON.pause : ICON.play;
     return [
       h('section', { class: 'station-hero' },
+        h('div', { class: 'station-flag-emblem', 'aria-hidden': 'true' }, ICON.slovenia),
         h('div', { class: 'station-kicker' }, h('span', { class: 'station-live-dot' }), ' SLOVENIJA · RADIO V ŽIVO'),
         h('div', { class: 'station-hero-copy' },
           h('div', {},
