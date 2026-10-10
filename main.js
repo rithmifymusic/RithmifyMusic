@@ -290,6 +290,7 @@ function createWindow() {
     },
   });
   win.setIcon(appIcon);
+  win.removeMenu();
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https:\/\//.test(url)) shell.openExternal(url);
     return { action: 'deny' };

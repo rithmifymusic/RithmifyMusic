@@ -199,16 +199,16 @@ app.post('/api/register', wrap(async (req, res) => {
   const b = req.body || {};
   const id = str(b.id, 40), name = str(b.name, 24).trim(), email = str(b.email, 120).trim().toLowerCase();
   const salt = str(b.salt, 64), hash = str(b.hash, 128), color = str(b.color, 16);
-  if (!id || name.length < 2 || !EMAIL_RE.test(email) || !salt || !hash) return res.status(400).json({ error: 'Neveljavni podatki.' });
-  const dup = await pool.query('SELECT 1 FROM accounts WHERE email=$1 OR lower(name)=lower($2) OR id=$3', [email, name, id]);
+  if (!id || name.length < 2 || (email && !EMAIL_RE.test(email)) || !salt || !hash) return res.status(400).json({ error: 'Neveljavni podatki.' });
+  const dup = await pool.query('SELECT 1 FROM accounts WHERE ($1::text IS NOT NULL AND email=$1) OR lower(name)=lower($2) OR id=$3', [email || null, name, id]);
   if (dup.rowCount) return res.status(409).json({ error: 'Ime ali e-pošta je že zasedena.' });
   const token = crypto.randomBytes(32).toString('hex');
   const srvSalt = crypto.randomBytes(16).toString('hex');
   await pool.query(
     `INSERT INTO accounts (id,name,email,color,client_salt,client_hash,srv_salt,srv_hash,token_hash,data,updated_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-    [id, name, email, color, salt, hash, srvSalt, scrypt(hash, srvSalt), sha(token), JSON.stringify(b.data || {}), Date.now()]);
-  sendMail(email, 'Dobrodošel v Gmajna Music', `Živjo ${name},\n\nTvoj profil v Gmajna Music je ustvarjen.\nUporabniško ime: ${name}\nE-pošta: ${email}\n\nČe profila nisi ustvaril ti, nam odgovori na to sporočilo.`);
+    [id, name, email || null, color, salt, hash, srvSalt, scrypt(hash, srvSalt), sha(token), JSON.stringify(b.data || {}), Date.now()]);
+      if (email) sendMail(email, 'Dobrodošel v Gmajna Music', `Živjo ${name},\n\nTvoj profil v Gmajna Music je ustvarjen.\nUporabniško ime: ${name}\nE-pošta: ${email}\n\nČe profila nisi ustvaril ti, nam odgovori na to sporočilo.`);
   res.json({ token });
 }));
 
@@ -310,12 +310,14 @@ app.put('/api/account', auth, wrap(async (req, res) => {
     if (d.rowCount) return res.status(409).json({ error: 'To ime je že zasedeno.' });
     name = n; changes.push(`uporabniško ime: ${n}`);
   }
-  if (typeof b.email === 'string' && b.email.trim().toLowerCase() !== r.email) {
+  if (typeof b.email === 'string' && (b.email.trim().toLowerCase() || null) !== (r.email || null)) {
     const m = b.email.trim().toLowerCase();
-    if (!EMAIL_RE.test(m)) return res.status(400).json({ error: 'Neveljavna e-pošta.' });
-    const d = await pool.query('SELECT 1 FROM accounts WHERE email=$1 AND id<>$2', [m, r.id]);
-    if (d.rowCount) return res.status(409).json({ error: 'Ta e-pošta je že registrirana.' });
-    email = m; changes.push(`e-pošta: ${m}`);
+    if (m) {
+      if (!EMAIL_RE.test(m)) return res.status(400).json({ error: 'Neveljavna e-pošta.' });
+      const d = await pool.query('SELECT 1 FROM accounts WHERE email=$1 AND id<>$2', [m, r.id]);
+      if (d.rowCount) return res.status(409).json({ error: 'Ta e-pošta je že registrirana.' });
+      email = m; changes.push(`e-pošta: ${m}`);
+    } else { email = null; changes.push('e-pošta odstranjena'); }
   }
   if (typeof b.color === 'string' && b.color !== r.color) { color = b.color.slice(0, 16); changes.push('barva profila'); }
   if (b.salt && b.hash) {
@@ -330,8 +332,8 @@ app.put('/api/account', auth, wrap(async (req, res) => {
     [name, email, color, client_salt, client_hash, srv_salt, srv_hash, data, Date.now(), r.id]);
   if (changes.length) {
     const text = `Živjo ${name},\n\nTvoj profil je bil posodobljen:\n- ${changes.join('\n- ')}\n\nČe tega nisi naredil ti, takoj zamenjaj geslo.`;
-    sendMail(email, 'Profil posodobljen – Gmajna Music', text);
-    if (email !== r.email) sendMail(r.email, 'E-pošta profila je bila spremenjena', text);
+    if (email) sendMail(email, 'Profil posodobljen – Gmajna Music', text);
+    if (email !== r.email && r.email) sendMail(r.email, 'E-pošta profila je bila spremenjena', text);
   }
   res.json({ ok: true, updatedAt: Number(upd.rows[0].updated_at) });
 }));
@@ -468,6 +470,7 @@ app.post('/api/reset/request', wrap(async (req, res) => {
   const key = str(req.body?.key, 120).trim().toLowerCase();
   const { rows } = await pool.query('SELECT id,name,email FROM accounts WHERE email=$1 OR lower(name)=$1', [key]);
   const r = rows[0];
+  if (r && !r.email) return res.status(400).json({ error: 'Ta profil nima e-pošte, zato gesla ni mogoče ponastaviti.' });
   if (r) {
     const code = String(crypto.randomInt(100000, 1000000));
     const sent = await sendMail(r.email, 'Reset gesla – Rythmify', `Živjo ${r.name},\n\nKoda za ponastavitev gesla: ${code}\nVeljavna je 15 minut. Če je nisi zahteval ti, tega sporočila ne upoštevaj.`);
@@ -522,10 +525,11 @@ app.post('/api/reset/confirm', wrap(async (req, res) => {
 
 (async () => {
   await pool.query(`CREATE TABLE IF NOT EXISTS accounts (
-    id text PRIMARY KEY, name text NOT NULL, email text NOT NULL UNIQUE, color text,
+    id text PRIMARY KEY, name text NOT NULL, email text UNIQUE, color text,
     client_salt text NOT NULL, client_hash text NOT NULL, srv_salt text NOT NULL, srv_hash text NOT NULL,
     token_hash text, data jsonb NOT NULL DEFAULT '{}', updated_at bigint NOT NULL DEFAULT 0,
     created_at timestamptz NOT NULL DEFAULT now())`);
+  await pool.query('ALTER TABLE accounts ALTER COLUMN email DROP NOT NULL');
   await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS accounts_name_idx ON accounts (lower(name))');
   await pool.query(`CREATE TABLE IF NOT EXISTS billing_subscriptions (
     account_id text PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,

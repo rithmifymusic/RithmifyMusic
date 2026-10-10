@@ -380,7 +380,7 @@ function showAuth(mode = root.accounts.length ? 'login' : 'register') {
   };
   const draw = () => {
     const name = h('input', { type: 'text', placeholder: tab === 'login' ? 'E-pošta ali uporabniško ime' : 'Uporabniško ime', maxlength: '60' });
-    const email = h('input', { type: 'text', placeholder: 'E-pošta', maxlength: '120', autocomplete: 'email' });
+    const email = h('input', { type: 'text', placeholder: 'E-pošta (neobvezno)', maxlength: '120', autocomplete: 'email' });
     const pw = h('input', { type: 'password', placeholder: 'Geslo' });
     const pw2 = h('input', { type: 'password', placeholder: 'Ponovi geslo' });
     const remember = h('input', { type: 'checkbox', checked: 'checked' });
@@ -402,8 +402,8 @@ function showAuth(mode = root.accounts.length ? 'login' : 'register') {
         if (modeNow === 'register') {
           const mail = email.value.trim().toLowerCase();
           if (uname.length < 2 || uname.length > 24) { err.textContent = 'Ime naj ima 2 do 24 znakov.'; return; }
-          if (!EMAIL_RE.test(mail)) { err.textContent = 'Vnesi veljaven e-poštni naslov.'; return; }
-          if (root.accounts.some((a) => (a.email || '') === mail)) { err.textContent = 'Ta e-pošta je že registrirana.'; return; }
+          if (mail && !EMAIL_RE.test(mail)) { err.textContent = 'E-poštni naslov ni veljaven (lahko ga pustiš praznega).'; return; }
+          if (mail && root.accounts.some((a) => (a.email || '') === mail)) { err.textContent = 'Ta e-pošta je že registrirana.'; return; }
           if (pw.value.length < 6) { err.textContent = 'Geslo naj ima vsaj 6 znakov.'; return; }
           if (pw.value !== pw2.value) { err.textContent = 'Gesli se ne ujemata.'; return; }
           if (root.accounts.some((a) => a.name.toLowerCase() === uname.toLowerCase())) { err.textContent = 'To ime je že zasedeno.'; return; }
@@ -1306,6 +1306,65 @@ let pT = 0;
 const pDots = Array.from({ length: 90 }, () => ({
   x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, sw: 0.3 + Math.random() * 1.2,
 }));
+const snowFlakes = Array.from({ length: 140 }, () => ({
+  x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, big: Math.random() < 0.12,
+}));
+function drawSnow(ctx, w, hh, e) {
+  for (const d of snowFlakes) {
+    d.y += (0.0006 + 0.0012 * d.z) * (1 + e * 2);
+    d.ph += 0.015;
+    if (d.y > 1.02) { d.y = -0.02; d.x = Math.random(); }
+    const x = (d.x + 0.02 * Math.sin(d.ph + d.y * 6)) * w;
+    const y = d.y * hh;
+    const r = (1 + d.z * 2.2) * (d.big ? 1.8 : 1);
+    ctx.fillStyle = `rgba(255,255,255,${0.45 + d.z * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 6.283);
+    ctx.fill();
+    if (d.big) {
+      ctx.strokeStyle = `rgba(255,255,255,${0.35 + d.z * 0.4})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let k = 0; k < 3; k++) {
+        const a = d.ph * 0.3 + (k * Math.PI) / 3;
+        ctx.moveTo(x - Math.cos(a) * r * 2.2, y - Math.sin(a) * r * 2.2);
+        ctx.lineTo(x + Math.cos(a) * r * 2.2, y + Math.sin(a) * r * 2.2);
+      }
+      ctx.stroke();
+    }
+  }
+  const snow = (a) => `rgba(245,250,255,${a})`;
+  ctx.fillStyle = snow(0.95);
+  ctx.beginPath();
+  ctx.moveTo(0, hh);
+  for (let x = 0; x <= w; x += 12) ctx.lineTo(x, hh - 16 - 9 * Math.sin(x / 70) - 6 * Math.sin(x / 23 + 1));
+  ctx.lineTo(w, hh);
+  ctx.closePath();
+  ctx.fill();
+  for (const side of [0, 1]) {
+    ctx.fillStyle = snow(0.85);
+    ctx.beginPath();
+    for (let y = 0; y <= hh; y += 12) {
+      const wd = 6 + 4 * Math.sin(y / 55 + side * 2) + 3 * Math.sin(y / 17);
+      if (y === 0) ctx.moveTo(side ? w : 0, y); else ctx.lineTo(side ? w - wd : wd, y);
+    }
+    ctx.lineTo(side ? w : 0, hh);
+    ctx.closePath();
+    ctx.fill();
+  }
+  const box = $('#content')?.getBoundingClientRect();
+  const cx = box ? box.left : 0;
+  const cw = box ? box.width : w;
+  const cy = box && box.top > 0 ? box.top : 0;
+  ctx.fillStyle = snow(0.92);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  for (let x = 0; x <= cw; x += 10) ctx.lineTo(cx + x, cy - 5 - 3 * Math.sin(x / 40) - 2 * Math.sin(x / 13));
+  ctx.lineTo(cx + cw, cy + 3);
+  for (let x = cw; x >= 0; x -= 10) ctx.lineTo(cx + x, cy + 5 + 4 * Math.abs(Math.sin(x / 31)) + 3 * Math.sin(x / 9 + 2));
+  ctx.closePath();
+  ctx.fill();
+}
 function startParticles() {
   const on = db.settings.particles !== false;
   pCanvas.style.display = on ? 'block' : 'none';
@@ -1328,6 +1387,7 @@ function pLoop() {
     } else e = 0.25 + 0.15 * Math.sin(pT * 2);
   }
   pT += 0.016;
+  if (db.settings.snow) { drawSnow(ctx, w, hh, e); return; }
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
   const hue = hexHue(accent);
   for (const d of pDots) {
@@ -1736,7 +1796,7 @@ async function spApi(url) {
   if (Date.now() > s.exp) await spToken({ grant_type: 'refresh_token', refresh_token: s.refresh });
   const r = await fetch(url, { headers: { Authorization: `Bearer ${spAuth.access}` } });
   if (r.status === 429) throw new Error(`Preveč zahtev, poskusi čez ${r.headers.get('Retry-After') || 30} s.`);
-  if (r.status === 403) throw new Error('Spotify zavrača dostop (403). Seznam mora biti tvoj ali skupen, račun pa dodan v User Management.');
+  if (r.status === 403) throw new Error('Spotify zavrača dostop (403). Možni razlogi: (1) tvoj Spotify e-mail še ni dodan v User Management aplikacije, (2) seznam je Spotifyjev samodejni mix (Daily Mix, Radio ...), ki ga API ne da, (3) seznam ni tvoj ali skupen. Rešitev: mix kopiraj v svoj seznam (označi vse skladbe → Dodaj na seznam → Nov seznam) in uvozi tega; prosi lastnika aplikacije, naj doda tvoj e-mail.');
   const j = await r.json();
   if (!r.ok) throw new Error(j.error?.message || `Napaka ${r.status}`);
   return j;
@@ -2526,11 +2586,11 @@ function applyTheme() {
 
 const THEME_COLORS = {
   green: '#1ed760', purple: '#b388ff', gold: '#ffc107', red: '#ff3d71',
-  blue: '#3d8bff', cyan: '#18e0e0', pink: '#ff6ad5', orange: '#ff8a3d',
+  blue: '#3d8bff', cyan: '#18e0e0', pink: '#ff6ad5',   orange: '#ff8a3d',
 };
 const THEME_NAMES = {
   green: 'Zelena', purple: 'Vijolična', gold: 'Zlata', red: 'Rdeča',
-  blue: 'Modra', cyan: 'Turkizna', pink: 'Roza', orange: 'Oranžna',
+  blue: 'Modra', cyan: 'Turkizna', pink: 'Roza',   orange: 'Oranžna',
 };
 function applyAmbient() {
   const s = db.settings;
@@ -2633,6 +2693,11 @@ function drawFxMenu() {
     h('div', { class: 'fxsec' }, 'Videz'),
     row('Tema', select(Object.entries(THEME_NAMES), () => s.theme, (v) => { s.theme = v; s.ambientCustom = ''; applyTheme(); drawFxMenu(); })),
     h('div', { class: 'fxsec' }, 'Ambient ozadje'),
+    row('🎄 Božični sneg', h('input', { type: 'checkbox', checked: s.snow ? 'checked' : null, onchange: (e) => {
+      s.snow = e.target.checked;
+      if (s.snow && s.particles === false) s.particles = true;
+      save(); startParticles(); drawFxMenu();
+    } })),
     row('Ambient', h('input', { type: 'checkbox', checked: s.ambient ? 'checked' : null, onchange: (e) => { s.ambient = e.target.checked; applyAmbient(); save(); } })),
     row('Barva', h('div', { class: 'swatches' },
       ...Object.entries(THEME_COLORS).map(([k, c]) => h('button', {
@@ -2848,7 +2913,7 @@ function jamBroadcast(force) {
   jamBroadcast.last = now;
   jam.socket.emit('sync', { a: 'presence', track: slimTrack(cur), pos: getPos(), playing: isPlaying() });
 }
-setInterval(() => jamBroadcast(true), 500);
+setInterval(() => jamBroadcast(true), 1000);
 
 function jamCommand(cmd, payload = {}) {
   if (!jam.controlAllowed) { toast('Gostitelj ni dovolil upravljanja.'); return; }
@@ -2885,11 +2950,16 @@ async function jamOnSync(p) {
     return;
   }
   if (!cur || cur.id !== t.id) {
-    await playTrack(t, { start: p.pos, queue: [] });
-    if (!p.playing) enginePause();
+    if (jamOnSync.loading) return;
+    jamOnSync.loading = true;
+    try {
+      await playTrack(t, { start: p.pos, queue: [] });
+      if (!p.playing) enginePause();
+    } finally { jamOnSync.loading = false; }
     return;
   }
-  if (Math.abs(getPos() - p.pos) > 0.75) engineSeek(p.pos);
+  const now = Date.now();
+  if (Math.abs(getPos() - p.pos) > 2 && now - (jamOnSync.lastSeek || 0) > 3000) { jamOnSync.lastSeek = now; engineSeek(p.pos); }
   if (p.playing && !isPlaying()) enginePlay();
   if (!p.playing && isPlaying()) enginePause();
 }
