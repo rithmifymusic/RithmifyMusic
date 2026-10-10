@@ -2513,6 +2513,19 @@ const views = {
       h('input', { type: 'range', min, max, value: get(), onchange: (e) => { set(Number(e.target.value)); save(); } }));
     return [
       hero(h('h2', {}, 'Nastavitve')),
+      h('h3', {}, 'Posodobitve'),
+      (() => {
+        const status = h('span', {}, '');
+        window.gmajna.getVersion().then((v) => { status.textContent = `Nameščena različica: ${v}`; });
+        return h('div', { class: 'setting' }, h('label', {}, 'Rythmify'), status,
+          btn('Preveri posodobitve', async () => {
+            status.textContent = 'Preverjam …';
+            const r = await window.gmajna.checkUpdate();
+            status.textContent = r.status === 'latest' ? `Različica ${r.current} je najnovejša ✓`
+              : r.status === 'available' ? `Na voljo ${r.latest}; prenaša se, ob koncu te vprašam za ponovni zagon.`
+                : r.status === 'dev' ? `Razvojna različica ${r.current}` : `Napaka pri preverjanju: ${r.error}`;
+          }, 'btn sec'));
+      })(),
       h('h3', {}, 'Spotify'),
       h('div', { class: 'setting' }, h('label', {}, 'Spotify (uvoz seznamov)'),
         h('span', {}, spAuth?.access ? 'Povezan ✓ ' : 'Ni povezan '),
@@ -2588,7 +2601,8 @@ function renderSidebar() {
     nav('users', '☺', '#333', 'Uporabniki', `${social.friends.length} prijateljev`),
     nav('jam', '◎', '#333', 'Jam', jam.room ? 'Aktiven' : 'Skupno poslušanje'),
     nav('settings', '⚙', '#333', 'Nastavitve', 'Strežnik, YouTube, Spotify, videz'),
-    h('div', { id: 'net' }, navigator.onLine ? '● Povezano' : '○ Brez povezave: samo offline skladbe'));
+    h('div', { id: 'net' }, navigator.onLine ? '● Povezano' : '○ Brez povezave: samo offline skladbe'),
+    h('div', { id: 'appver', style: 'font-size:11px;opacity:.5;padding:2px 12px 6px' }, appVersion ? `v${appVersion}` : ''));
 }
 
 function render() {
@@ -2844,6 +2858,8 @@ $('#avatar-btn').onclick = (e) => {
 };
 document.addEventListener('click', () => { $('#menu').hidden = true; });
 
+let appVersion = '';
+window.gmajna.getVersion().then((v) => { appVersion = v; const el = $('#appver'); if (el) el.textContent = `v${v}`; });
 function updateNet() { if (account) renderSidebar(); }
 window.addEventListener('online', updateNet);
 window.addEventListener('offline', updateNet);

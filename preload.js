@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('gmajna', {
   importFiles: () => ipcRenderer.invoke('library:import'),
   removeFile: (file) => ipcRenderer.invoke('library:remove', file),
   openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
+  getVersion: () => ipcRenderer.invoke('app:version'),
+  checkUpdate: () => ipcRenderer.invoke('app:checkUpdate'),
   setFullscreen: (on) => ipcRenderer.invoke('win:fullscreen', on),
   setMini: (on) => ipcRenderer.invoke('win:mini', on),
   ytSearch: (q) => ipcRenderer.invoke('yt:search', q),

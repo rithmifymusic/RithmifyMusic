@@ -457,6 +457,16 @@ ipcMain.handle('app:openExternal', (_e, url) => {
 });
 
 let normalBounds = null;
+let updaterRef = null;
+ipcMain.handle('app:version', () => app.getVersion());
+ipcMain.handle('app:checkUpdate', async () => {
+  if (!app.isPackaged || !updaterRef) return { status: 'dev', current: app.getVersion() };
+  try {
+    const r = await updaterRef.checkForUpdates();
+    const latest = r?.updateInfo?.version || app.getVersion();
+    return { status: latest !== app.getVersion() ? 'available' : 'latest', current: app.getVersion(), latest };
+  } catch (e) { return { status: 'error', current: app.getVersion(), error: e.message }; }
+});
 ipcMain.handle('win:fullscreen', (_e, on) => {
   if (!win) return false;
   win.setFullScreen(typeof on === 'boolean' ? on : !win.isFullScreen());
@@ -497,6 +507,7 @@ function setupUpdater() {
   try {
     const { autoUpdater } = require('electron-updater');
     autoUpdater.autoDownload = true;
+    updaterRef = autoUpdater;
     autoUpdater.on('update-downloaded', (info) => {
       dialog.showMessageBox(win, {
         type: 'info', buttons: ['Znova zaženi zdaj', 'Pozneje'], defaultId: 0,
