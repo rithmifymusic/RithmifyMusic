@@ -552,8 +552,11 @@ body.np-lyrics #yt-wrap{opacity:0!important;pointer-events:none!important}
 /* Christmas polish */
 body.xmas{background:radial-gradient(ellipse at 78% 0%,rgba(230,188,82,.22) 0,transparent 38%),radial-gradient(circle at 15% 90%,rgba(192,57,75,.14) 0,transparent 40%),radial-gradient(circle at 72% 16%,#1e6848 0,#0b2e24 38%,#04140f 100%)}
 body.xmas #sidebar{border-right:1px solid rgba(230,188,82,.25)}
-body.xmas .nav.on,body.xmas .nav.active,body.xmas #sidebar .nav.on{background:linear-gradient(90deg,rgba(192,57,75,.55),rgba(192,57,75,.15));box-shadow:inset 3px 0 0 #e6bc52}
 body.xmas #content h2,body.xmas #content h3,body.xmas #content .sec-title{color:#fff4d6;text-shadow:0 0 14px rgba(230,188,82,.3)}
 body.xmas .card:hover,body.xmas .tile:hover{background:rgba(255,255,255,.16);box-shadow:0 0 0 1px rgba(230,188,82,.55),0 8px 24px rgba(0,0,0,.35);transform:translateY(-2px)}
 body.xmas .card,body.xmas .tile{transition:background .2s,box-shadow .2s,transform .2s}
 body.xmas #app::after{height:20px;background:radial-gradient(circle at 10px 12px,#ff5a6a 0 5px,transparent 6px) 0 0/96px 20px repeat-x,radial-gradient(circle at 10px 12px,#ffd966 0 5px,transparent 6px) 24px 0/96px 20px repeat-x,radial-gradient(circle at 10px 12px,#6fe3a0 0 5px,transparent 6px) 48px 0/96px 20px repeat-x,radial-gradient(circle at 10px 12px,#6fb8ff 0 5px,transparent 6px) 72px 0/96px 20px repeat-x,linear-gradient(rgba(20,40,30,.95),rgba(20,40,30,.95)) 0 3px/100% 2px no-repeat;filter:drop-shadow(0 0 6px rgba(255,235,164,.8))}
+/* Active tab follows the theme accent (all themes, Christmas on or off) */
+#sidebar .nav.active{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 34%,transparent),color-mix(in srgb,var(--accent) 8%,transparent));box-shadow:inset 3px 0 0 var(--accent);color:#fff}
+#sidebar .nav.active b,#sidebar .nav.active .ico{color:var(--accent)}
+#sidebar .nav:hover:not(.active){background:color-mix(in srgb,var(--accent) 12%,transparent)}
