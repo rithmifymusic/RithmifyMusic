@@ -135,7 +135,7 @@ const defaultDb = () => ({
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', vizColor: 'theme', vizHeight: 52, vizGlow: true, vizSmoothing: 0.72, preset: 'flat', skipIntro: 0, skipOutro: 0,
-    ambient: true, ambientCustom: '', ambientPulse: true, snow: false, snowModeConfigured: true, partyMode: false,
+    ambient: true, ambientCustom: '', ambientPulse: true, ambientMode: 'normal', snow: false, snowModeConfigured: true, partyMode: false,
     particles: true, particleShape: 'circle', particleSpeed: 1, particleDensity: 90,
   },
   peerId: '',
@@ -294,6 +294,12 @@ function mergeData(data) {
   const settings = { ...base.settings, ...savedSettings, eq: { ...base.settings.eq, ...(savedSettings.eq || {}) } };
   if (savedSettings.snowModeConfigured !== true) settings.snow = false;
   settings.snowModeConfigured = true;
+  const ambientModes = ['normal', 'party', 'xmas', 'disco', 'newyear', 'halloween', 'valentine', 'summer'];
+  settings.ambientMode = ambientModes.includes(savedSettings.ambientMode)
+    ? savedSettings.ambientMode
+    : settings.snow ? 'xmas' : settings.partyMode ? 'party' : 'normal';
+  settings.snow = settings.ambientMode === 'xmas';
+  settings.partyMode = settings.ambientMode === 'party';
   delete settings.apiKey;
   return {
     ...base, ...d,
@@ -1481,6 +1487,8 @@ const pParticles = Array.from({ length: 220 }, () => ({
 const snowFlakes = Array.from({ length: 70 }, () => ({
   x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28,
 }));
+const fireworks = [];
+let particleFrame = 0;
 function drawSnow(ctx, w, hh, e) {
   for (const d of snowFlakes) {
     d.y += (0.0005 + 0.001 * d.z) * (1 + e * 1.5);
@@ -1515,9 +1523,39 @@ function drawSnow(ctx, w, hh, e) {
   ctx.closePath();
   ctx.fill();
 }
+function drawFireworks(ctx, w, hh, speed, density) {
+  particleFrame += 1;
+  if (particleFrame % 70 === 1) {
+    const x = w * (0.18 + Math.random() * 0.64);
+    const y = hh * (0.12 + Math.random() * 0.4);
+    const hue = Math.random() * 360;
+    const count = Math.round(18 + density / 5);
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI * 2 * i / count;
+      const velocity = 0.7 + Math.random() * 1.8;
+      fireworks.push({ x, y, vx: Math.cos(angle) * velocity, vy: Math.sin(angle) * velocity, life: 1, hue });
+    }
+  }
+  for (let i = fireworks.length - 1; i >= 0; i--) {
+    const spark = fireworks[i];
+    spark.x += spark.vx * speed;
+    spark.y += spark.vy * speed;
+    spark.vy += 0.018 * speed;
+    spark.life -= 0.012 * speed;
+    if (spark.life <= 0) { fireworks.splice(i, 1); continue; }
+    ctx.beginPath();
+    ctx.fillStyle = `hsla(${spark.hue},100%,70%,${spark.life})`;
+    ctx.shadowColor = `hsla(${spark.hue},100%,70%,${spark.life})`;
+    ctx.shadowBlur = 10;
+    ctx.arc(spark.x, spark.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
 function startParticles() {
   document.body.classList.toggle('xmas', !!db.settings.snow);
   document.body.classList.toggle('party-mode', !!db.settings.partyMode && !db.settings.snow);
+  for (const mode of ['disco', 'newyear', 'halloween', 'valentine', 'summer']) document.body.classList.toggle(`${mode}-mode`, db.settings.ambientMode === mode);
   const on = db.settings.particles !== false;
   pCanvas.style.display = on ? 'block' : 'none';
   if (on && !pRaf) pRaf = requestAnimationFrame(pLoop);
@@ -1539,13 +1577,14 @@ function pLoop() {
     } else e = 0.25 + 0.15 * Math.sin(pT * 2);
   }
   const speed = Math.max(0.25, Math.min(3, Number(db.settings.particleSpeed) || 1));
-  pT += 0.016 * speed;
-  if (db.settings.snow) { drawSnow(ctx, w, hh, e); return; }
-  const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
-  const partyMode = !!db.settings.partyMode;
-  const hue = partyMode ? (pT * 55) % 360 : hexHue(accent);
-  const shape = db.settings.particleShape || 'circle';
   const density = Math.max(20, Math.min(pParticles.length, Math.round(Number(db.settings.particleDensity) || 90)));
+  pT += 0.016 * speed;
+  const mode = db.settings.ambientMode || (db.settings.snow ? 'xmas' : db.settings.partyMode ? 'party' : 'normal');
+  if (mode === 'xmas') { drawSnow(ctx, w, hh, e); return; }
+  if (mode === 'newyear') { drawFireworks(ctx, w, hh, speed, density); return; }
+  const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
+  const hue = ['party', 'disco'].includes(mode) ? (pT * (mode === 'disco' ? 130 : 55)) % 360 : hexHue(accent);
+  const shape = db.settings.particleShape || 'circle';
   for (let i = 0; i < density; i++) {
     const d = pParticles[i];
     d.y += (0.00035 + 0.0007 * d.z) * speed * (1 + e * 3);
@@ -1554,7 +1593,24 @@ function pLoop() {
     const x = (d.x + 0.018 * Math.sin(d.ph + d.y * 8)) * w;
     const y = d.y * hh;
     const r = (0.8 + d.z * 1.4) * (1 + e * 0.8);
-    ctx.fillStyle = `hsla(${(hue + 50 * Math.sin(d.ph) + 30) % 360},90%,72%,${0.15 + d.z * 0.35 + e * 0.25})`;
+    const alpha = 0.15 + d.z * 0.35 + e * 0.25;
+    ctx.fillStyle = mode === 'halloween' ? `rgba(255,${100 + Math.round(d.z * 70)},35,${alpha})`
+      : mode === 'valentine' ? `rgba(255,${80 + Math.round(d.z * 80)},160,${alpha})`
+        : mode === 'summer' ? `rgba(255,${175 + Math.round(d.z * 65)},65,${alpha})`
+          : `hsla(${(hue + 50 * Math.sin(d.ph) + 30) % 360},90%,72%,${alpha})`;
+    if (mode === 'halloween') {
+      ctx.font = `${Math.max(9, r * 5)}px "Segoe UI Emoji"`;
+      ctx.fillText('🎃', x, y);
+      continue;
+    }
+    if (mode === 'valentine') {
+      ctx.beginPath();
+      ctx.moveTo(x, y + r * 1.5);
+      ctx.bezierCurveTo(x - r * 2.2, y, x - r, y - r * 1.5, x, y - r * 0.4);
+      ctx.bezierCurveTo(x + r, y - r * 1.5, x + r * 2.2, y, x, y + r * 1.5);
+      ctx.fill();
+      continue;
+    }
     ctx.beginPath();
     if (shape === 'square') ctx.rect(x - r, y - r, 2 * r, 2 * r);
     else if (shape === 'diamond') {
@@ -2842,6 +2898,24 @@ const THEME_NAMES = {
   green: 'Zelena', purple: 'Vijolična', gold: 'Zlata', red: 'Rdeča',
   blue: 'Modra', cyan: 'Turkizna', pink: 'Roza',   orange: 'Oranžna',
 };
+function setAmbientMode(mode) {
+  const modes = ['normal', 'party', 'xmas', 'disco', 'newyear', 'halloween', 'valentine', 'summer'];
+  const modeThemes = { party: 'purple', xmas: 'green', disco: 'pink', newyear: 'gold', halloween: 'orange', valentine: 'pink', summer: 'cyan' };
+  const s = db.settings;
+  s.ambientMode = modes.includes(mode) ? mode : 'normal';
+  s.snow = s.ambientMode === 'xmas';
+  s.partyMode = s.ambientMode === 'party';
+  if (s.ambientMode !== 'newyear') fireworks.length = 0;
+  if (modeThemes[s.ambientMode]) s.theme = modeThemes[s.ambientMode];
+  s.ambientCustom = '';
+  if (s.ambientMode !== 'normal') {
+    s.ambient = true;
+    s.particles = true;
+  }
+  applyTheme();
+  startParticles();
+  drawFxMenu();
+}
 function applyAmbient() {
   const s = db.settings;
   const color = s.ambientCustom || THEME_COLORS[s.theme] || THEME_COLORS.green;
@@ -2944,34 +3018,16 @@ function drawFxMenu() {
     h('div', { class: 'fxsec' }, 'Videz'),
     row('Tema', select(Object.entries(THEME_NAMES), () => s.theme, (v) => { s.theme = v; s.ambientCustom = ''; applyTheme(); drawFxMenu(); })),
     h('div', { class: 'fxsec' }, 'Ambient ozadje'),
-    row(h('span', {}, '🎄 Božični način ', h('span', { class: 'beta-badge' }, 'BETA')), h('input', { type: 'checkbox', checked: s.snow ? 'checked' : null, onchange: (e) => {
-      s.snow = e.target.checked;
-      if (s.snow) {
-        s.partyMode = false;
-        s.theme = 'green';
-        s.ambientCustom = '';
-        s.ambient = true;
-        s.particles = true;
-        applyTheme();
-        startParticles();
-      } else {
-        startParticles();
-        applyAmbient();
-      }
-      save(); drawFxMenu();
-    } })),
-    row(h('span', {}, '🎉 Party način ', h('span', { class: 'beta-badge' }, 'BETA')), h('input', { type: 'checkbox', checked: s.partyMode ? 'checked' : null, onchange: (e) => {
-      s.partyMode = e.target.checked;
-      if (s.partyMode) {
-        s.snow = false;
-        s.particles = true;
-        s.theme = 'purple';
-        s.ambientCustom = '';
-      }
-      applyTheme();
-      startParticles();
-      save(); drawFxMenu();
-    } })),
+    row('Način', select([
+      ['normal', 'Običajno'],
+      ['party', '🎉 Party način (BETA)'],
+      ['disco', '🪩 Disco (BETA)'],
+      ['xmas', '🎄 Božični način (BETA)'],
+      ['newyear', '🎆 Novo leto (BETA)'],
+      ['halloween', '🎃 Noč čarovnic (BETA)'],
+      ['valentine', '💖 Valentinovo (BETA)'],
+      ['summer', '☀️ Poletni način (BETA)'],
+    ], () => s.ambientMode || (s.snow ? 'xmas' : s.partyMode ? 'party' : 'normal'), setAmbientMode)),
     row('Ambient', h('input', { type: 'checkbox', checked: s.ambient ? 'checked' : null, onchange: (e) => { s.ambient = e.target.checked; applyAmbient(); save(); } })),
     row('Barva', h('div', { class: 'swatches' },
       ...Object.entries(THEME_COLORS).map(([k, c]) => h('button', {
