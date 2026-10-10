@@ -726,11 +726,14 @@ function publishPopoutState() {
   window.gmajna.sendPopoutState({
     title: cur?.title || '',
     artist: cur?.artist || (cur?.type === 'radio' ? 'Radio v živo' : ''),
-    cover: cur?.cover || '',
+    cover: cur?.cover || (cur?.type === 'radio' ? radioStationLogoUrl(cur.station) : ''),
     position: getPos(),
     duration: getDur(),
     playing: isPlaying(),
     volume: Number(db.settings.volume) || 0,
+    liked: !!cur && isLiked(cur),
+    shuffle,
+    repeat,
     accent: getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#ff3d71',
   });
 }
@@ -1352,6 +1355,14 @@ window.gmajna.onPopoutCommand((action, value) => {
   else if (action === 'volume') {
     $('#volume').value = Math.max(0, Math.min(100, Number(value) || 0));
     $('#volume').dispatchEvent(new Event('input'));
+  } else if (action === 'shuffle') {
+    cycleShuffle();
+  } else if (action === 'repeat') {
+    $('#btn-repeat').click();
+  } else if (action === 'like') {
+    if (cur) toggleLike(cur);
+  } else if (action === 'add') {
+    if (cur) void addToPlaylist(cur);
   } else if (action === 'state-request') publishPopoutState();
 });
 
@@ -2817,7 +2828,7 @@ function radioStationMark(station, player = false) {
 }
 
 function radioStationLogoUrl(station) {
-  return station?.logo ? `img/radio/${station.logo}.png` : '';
+  return station?.logo ? `/img/radio/${station.logo}.png` : '';
 }
 
 function radioStationCards() {

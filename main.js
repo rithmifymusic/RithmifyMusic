@@ -277,12 +277,17 @@ function startAdSkipper() {
   }, 300);
 }
 
-function createWindow() {
+function getAppIcon() {
   const iconPath = process.platform === 'win32' && app.isPackaged
     ? path.join(process.resourcesPath, 'rythmify.ico')
     : path.join(__dirname, 'renderer', 'img', process.platform === 'win32' ? 'rythmify.ico' : 'logo.png');
   const appIcon = nativeImage.createFromPath(iconPath);
   if (appIcon.isEmpty()) throw new Error(`Neveljavna ikona aplikacije: ${iconPath}`);
+  return appIcon;
+}
+
+function createWindow() {
+  const appIcon = getAppIcon();
   win = new BrowserWindow({
     width: 1280, height: 800, minWidth: 900, minHeight: 600,
     backgroundColor: '#121212', title: 'Rythmify', autoHideMenuBar: true,
@@ -636,15 +641,16 @@ ipcMain.handle('win:popout', (_e, open = true) => {
     return true;
   }
   popoutWin = new BrowserWindow({
-    width: 460, height: 190, minWidth: 380, minHeight: 170,
+    width: 360, height: 360, minWidth: 280, minHeight: 280,
     resizable: true, backgroundColor: '#111114', title: 'Rythmify – Mini predvajalnik',
-    autoHideMenuBar: true, alwaysOnTop: true,
+    autoHideMenuBar: true, alwaysOnTop: true, icon: getAppIcon(),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: true,
       backgroundThrottling: false,
     },
   });
+  popoutWin.setIcon(getAppIcon());
   popoutWin.setAlwaysOnTop(true, 'floating');
   popoutWin.removeMenu();
   popoutWin.on('closed', () => { popoutWin = null; });
@@ -661,7 +667,7 @@ ipcMain.on('popout:state', (event, state) => {
 });
 ipcMain.on('popout:command', (event, action, value) => {
   if (!win || win.isDestroyed() || !popoutWin || event.sender !== popoutWin.webContents) return;
-  if (!['toggle', 'previous', 'next', 'seek', 'volume', 'state-request'].includes(action)) return;
+  if (!['toggle', 'previous', 'next', 'seek', 'volume', 'shuffle', 'repeat', 'like', 'add', 'state-request'].includes(action)) return;
   win.webContents.send('popout:command', action, value);
 });
 

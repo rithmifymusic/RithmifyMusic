@@ -8,28 +8,34 @@
 </head>
 <body>
   <main id="player">
-    <section class="track">
+    <section class="cover-stage" aria-label="Kontrole predvajanja">
       <img id="cover" alt="">
-      <div class="track-info">
+      <div class="cover-overlay">
+        <div class="overlay-header">
+        <button id="close" title="Zapri mini predvajalnik" aria-label="Zapri mini predvajalnik">×</button>
+        </div>
+        <div class="buttons">
+          <button id="shuffle" title="Naključno" aria-label="Naključno">⤨</button>
+          <button id="previous" title="Prejšnja skladba" aria-label="Prejšnja skladba">|◀</button>
+          <button id="toggle" class="play" title="Predvajaj" aria-label="Predvajaj"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.3v13.4L18.6 12z"/></svg></button>
+          <button id="next" title="Naslednja skladba" aria-label="Naslednja skladba">▶|</button>
+          <button id="repeat" title="Ponovi" aria-label="Ponovi">↻</button>
+        </div>
+        <div class="overlay-actions">
+          <button id="like" title="Všeček" aria-label="Všeček">♡</button>
+          <button id="add" title="Dodaj v seznam" aria-label="Dodaj v seznam">＋</button>
+          <label title="Glasnost"><span aria-hidden="true">♪</span><input id="volume" type="range" min="0" max="100" value="80" aria-label="Glasnost"></label>
+        </div>
+      </div>
+      <section class="track-details">
         <strong id="title">Nič se ne predvaja</strong>
         <span id="artist"></span>
-      </div>
-    </section>
-    <section class="controls">
-      <div class="buttons">
-        <button id="previous" title="Prejšnja skladba" aria-label="Prejšnja skladba">|◀</button>
-        <button id="toggle" class="play" title="Predvajaj" aria-label="Predvajaj">▶</button>
-        <button id="next" title="Naslednja skladba" aria-label="Naslednja skladba">▶|</button>
-      </div>
-      <div class="timeline">
-        <span id="position">0:00</span>
-        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Položaj skladbe">
-        <span id="duration">0:00</span>
-      </div>
-    </section>
-    <section class="extras">
-      <label title="Glasnost"><span aria-hidden="true">♪</span><input id="volume" type="range" min="0" max="100" value="80" aria-label="Glasnost"></label>
-      <button id="close" title="Zapri mini predvajalnik" aria-label="Zapri mini predvajalnik">×</button>
+        <div class="timeline">
+          <span id="position">0:00</span>
+          <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Položaj skladbe">
+          <span id="duration">0:00</span>
+        </div>
+      </section>
     </section>
   </main>
   <script src="popout.js"></script>

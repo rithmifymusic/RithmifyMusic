@@ -1,26 +1,31 @@
 :root{color-scheme:dark;font-family:Segoe UI,Arial,sans-serif;background:#111114;color:#f4f4f5;--accent:#ff3d71}
 *{box-sizing:border-box}
-body{margin:0;min-width:360px;min-height:138px;background:radial-gradient(ellipse at 10% 0,color-mix(in srgb,var(--accent) 18%,transparent),transparent 60%),#111114}
-#player{height:100vh;min-height:138px;padding:15px 18px;display:grid;grid-template-columns:minmax(125px,1fr) minmax(190px,1.55fr) auto;align-items:center;gap:14px}
-.track{min-width:0;display:flex;align-items:center;gap:10px}
-#cover{width:52px;height:52px;flex:none;border-radius:7px;object-fit:cover;background:#29292f;box-shadow:0 4px 14px #0007}
-.track-info{min-width:0;display:grid;gap:5px}
-.track-info strong,.track-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.track-info strong{font-size:13px;font-weight:700}
-.track-info span{font-size:11px;color:#a9a9b2}
-.controls{min-width:0;display:grid;gap:8px}
-.buttons{display:flex;justify-content:center;align-items:center;gap:15px}
-button{border:0;background:transparent;color:#eeeef2;cursor:pointer}
-.buttons button{min-width:30px;height:30px;font-size:15px}
-.buttons button:hover,#close:hover{color:var(--accent)}
-.buttons .play{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#171217;font-size:15px;box-shadow:0 0 18px color-mix(in srgb,var(--accent) 45%,transparent)}
-.buttons .play:hover{color:#171217;filter:brightness(1.12)}
-.timeline{display:flex;align-items:center;gap:7px}
-.timeline span{font-size:10px;color:#b8b8c0;font-variant-numeric:tabular-nums}
+html,body,#player{width:100%;height:100%;margin:0;overflow:hidden;background:#111114}
+button{border:0;background:transparent;color:#f4f4f5;cursor:pointer}
+.cover-stage{position:relative;width:100%;height:100%;overflow:hidden;background:#29292f}
+#cover{display:block;width:100%;height:100%;object-fit:cover;background:#29292f}
+.cover-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:14px;background:linear-gradient(#0008,#0003 45%,#000a);opacity:0;transition:opacity .18s ease}
+.cover-stage:hover .cover-overlay,.cover-stage:focus-within .cover-overlay{opacity:1}
+.overlay-header{position:absolute;top:11px;right:11px}
+#close{width:24px;height:24px;padding:0;font-size:20px;color:#e8e8ed}
+#close:hover{color:var(--accent)}
+.buttons{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,17px)}
+.buttons button{width:30px;height:30px;padding:0;font-size:16px;text-shadow:0 1px 4px #000}
+.buttons button:hover,.overlay-actions button:hover{color:var(--accent)}
+.buttons .play{width:54px;height:54px;border-radius:50%;background:#f7f7f9;color:#151519;box-shadow:0 5px 18px #000a;text-shadow:none;transition:transform .15s ease,filter .15s ease}
+.buttons .play:hover{color:#151519;filter:brightness(.9)}
+.buttons .play:active{transform:scale(.93)}
+.buttons .play svg{display:block;width:25px;height:25px;margin:auto;fill:currentColor}
+.buttons button.active,.overlay-actions button.active{color:var(--accent)}
+.overlay-actions{display:flex;align-items:center;gap:10px;padding:5px 9px;border-radius:99px;background:#111c}
+.overlay-actions button{padding:0;font-size:20px}
+.overlay-actions label{display:flex;align-items:center;gap:4px;color:#eeeef2;font-size:14px}
 input[type=range]{height:4px;accent-color:var(--accent);cursor:pointer}
+#volume{width:65px}
+.track-details{position:absolute;right:0;bottom:0;left:0;display:grid;gap:3px;padding:22px 12px 10px;background:linear-gradient(transparent,#09090be8 40%);pointer-events:none}
+.track-details strong,.track-details>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 5px #000}
+.track-details strong{font-size:14px;font-weight:700}
+.track-details>span{font-size:11px;color:#d2d2d8}
+.timeline{display:flex;align-items:center;gap:6px;pointer-events:auto}
+.timeline span{font-size:10px;color:#ececf0;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000}
 #seek{width:100%;min-width:40px}
-.extras{display:flex;align-items:center;gap:8px}
-.extras label{display:flex;align-items:center;gap:5px;color:#b8b8c0;font-size:15px}
-#volume{width:56px}
-#close{width:28px;height:28px;font-size:22px;color:#b8b8c0}
-@media(max-width:500px){#player{grid-template-columns:minmax(110px,1fr) minmax(170px,1.4fr) auto;gap:8px;padding:12px}.extras label{display:none}#cover{width:44px;height:44px}}
