@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('gmajna', {
   setMini: (on) => ipcRenderer.invoke('win:mini', on),
   ytSearch: (q) => ipcRenderer.invoke('yt:search', q),
   ytVideoSearch: (q) => ipcRenderer.invoke('yt:videoSearch', q),
+  podcastYouTubeSearch: (q) => ipcRenderer.invoke('podcast:youtubeSearch', q),
   podcastSearch: (q) => ipcRenderer.invoke('podcast:search', q),
   podcastEpisodes: (feedUrl) => ipcRenderer.invoke('podcast:episodes', feedUrl),
   getLyrics: (info) => ipcRenderer.invoke('lyrics:get', info),

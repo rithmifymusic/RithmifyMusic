@@ -385,7 +385,7 @@ ipcMain.handle('lyrics:get', async (_e, { title, artist, duration } = {}) => {
   return plain ? { synced: '', plain } : null;
 });
 
-ipcMain.handle('yt:videoSearch', async (_e, query) => {
+async function searchYouTubeVideos(query, { minSeconds = 60, maxSeconds = 720 } = {}) {
   const r = await fetch('https://www.youtube.com/youtubei/v1/search?prettyPrint=false', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://www.youtube.com', 'User-Agent': 'Mozilla/5.0' },
@@ -406,7 +406,7 @@ ipcMain.handle('yt:videoSearch', async (_e, query) => {
       const duration = video?.lengthText?.simpleText || '';
       const match = /^(?:(\d+):)?(\d+):(\d+)$/.exec(duration);
       const seconds = match ? (+match[1] || 0) * 3600 + +match[2] * 60 + +match[3] : 0;
-      if (!/^[\w-]{11}$/.test(videoId || '') || seconds < 60 || seconds > 720) continue;
+      if (!/^[\w-]{11}$/.test(videoId || '') || seconds < minSeconds || (maxSeconds > 0 && seconds > maxSeconds)) continue;
       const runs = (value) => (value?.runs || []).map((run) => run.text || '').join('');
       const cover = video.thumbnail?.thumbnails?.slice(-1)[0]?.url || '';
       out.push({
@@ -416,6 +416,14 @@ ipcMain.handle('yt:videoSearch', async (_e, query) => {
     }
   }
   return out;
+}
+
+ipcMain.handle('yt:videoSearch', async (_e, query) => searchYouTubeVideos(query));
+
+ipcMain.handle('podcast:youtubeSearch', async (_e, query) => {
+  const term = String(query || '').trim().slice(0, 160);
+  if (!term) return [];
+  return searchYouTubeVideos(`${term} podcast`, { minSeconds: 60, maxSeconds: 0 });
 });
 
 ipcMain.handle('podcast:search', async (_e, query) => {

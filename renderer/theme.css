@@ -71,6 +71,10 @@ h3{margin:26px 0 12px;font-size:22px;font-weight:700}
 .podcast-hero h2{position:relative;z-index:1;margin:0 0 8px;font-size:clamp(28px,4vw,38px);letter-spacing:-.035em}
 .podcast-intro{position:relative;z-index:1;color:var(--muted);font-size:14px;line-height:1.6}
 .podcast-discovery{padding:0 4px}
+.podcast-sources{display:flex;gap:8px;margin:0 0 14px}
+.podcast-source{padding:9px 15px;border:1px solid #ffffff14;border-radius:999px;background:#ffffff08;color:var(--muted);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.podcast-source:hover{border-color:#ffffff30;color:var(--text)}
+.podcast-source.active{border-color:color-mix(in srgb,var(--accent) 58%,transparent);background:color-mix(in srgb,var(--accent) 18%,#151515);color:var(--text)}
 .podcast-toolbar{display:flex;gap:10px;align-items:center;width:min(100%,760px);margin:0 0 26px}
 .podcast-searchbox{display:flex;align-items:center;gap:12px;flex:1;min-width:0;height:52px;padding:0 16px;border:1px solid #ffffff22;border-radius:14px;background:#ffffff0b;transition:border-color .18s,background .18s,box-shadow .18s}
 .podcast-searchbox:focus-within{border-color:color-mix(in srgb,var(--accent) 72%,#fff 28%);background:#ffffff10;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 17%,transparent)}
@@ -93,14 +97,17 @@ h3{margin:26px 0 12px;font-size:22px;font-weight:700}
 @keyframes podcast-spin{to{transform:rotate(360deg)}}
 .podcast-section{margin:28px 0 0;padding:0 4px}
 .podcast-section h3{margin:0 0 14px}
+.podcast-suggestion-group{margin:0 0 22px}
+.podcast-suggestion-group h4{margin:0 0 10px;color:var(--muted);font-size:14px}
 .podcast-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
 .podcast-card{min-width:0}
 .podcast-card .podcast-cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;box-shadow:0 8px 24px #0006}
 .podcast-subscribe{margin-top:12px;padding:8px 15px;border:1px solid #ffffff35;border-radius:18px;background:transparent;color:var(--text);font-weight:700;cursor:pointer;transition:border-color .16s,background .16s}
 .podcast-subscribe:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.podcast-episode-results{display:flex;flex-direction:column;gap:5px}
 .podcast-empty{padding:18px;border:1px dashed #ffffff20;border-radius:12px;color:var(--muted);font-size:13px}
 .podcast-credit{margin:26px 4px 0;color:var(--muted);font-size:12px}
-@media(max-width:600px){.podcast-hero{padding:26px 20px 22px}.podcast-hero:after{right:12px;top:18px;font-size:78px}.podcast-toolbar{gap:8px}.podcast-search-submit{min-width:82px;padding:0 16px}.podcast-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}}
+@media(max-width:600px){.podcast-hero{padding:26px 20px 22px}.podcast-hero:after{right:12px;top:18px;font-size:78px}.podcast-toolbar{gap:8px}.podcast-search-submit{min-width:82px;padding:0 16px}.podcast-sources{gap:6px}.podcast-source{padding:8px 12px}.podcast-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}}
 .card .ct{font-weight:700;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .ca{color:var(--muted);font-size:13px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .playfab{position:absolute;right:20px;top:calc(100% - 100px);width:44px;height:44px;border-radius:50%;background:var(--accent);color:#000;border:0;font-size:18px;opacity:0;transform:translateY(8px);transition:.2s;cursor:pointer;box-shadow:0 8px 16px #0006}

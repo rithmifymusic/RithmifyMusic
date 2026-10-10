@@ -2180,9 +2180,16 @@ async function inviteToPlaylist(pl) {
 
 // ---------- Views ----------
 const mixCache = {};
-let podcastSearch = { query: '', results: [], error: '', loading: false };
+let podcastSearch = { query: '', results: [], error: '', loading: false, source: 'apple' };
 let podcastSearchId = 0;
 const podcastEpisodesCache = new Map();
+const PODCAST_SUGGESTION_TOPICS = [
+  { title: 'Slovenski pogovori', query: 'slovenski podcast pogovor' },
+  { title: 'Novice', query: 'news podcast full episode' },
+  { title: 'Resnične zgodbe', query: 'true crime podcast full episode' },
+  { title: 'Znanost in zgodovina', query: 'science history podcast full episode' },
+];
+let podcastSuggestions = { status: 'idle', sections: [], error: '' };
 function podcastEpisodeTracks(show, xml) {
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   if (doc.getElementsByTagName('parsererror').length) throw new Error('RSS vir vsebuje neveljaven XML.');
@@ -2234,19 +2241,74 @@ function podcastEpisodeTracks(show, xml) {
   return episodes;
 }
 
-async function searchPodcasts(query) {
+function selectPodcastSource(source) {
+  if (podcastSearch.source === source) return;
+  const query = podcastSearch.query.trim();
+  if (query) {
+    searchPodcasts(query, source);
+    return;
+  }
+  podcastSearchId += 1;
+  podcastSearch = { ...podcastSearch, source, results: [], error: '', loading: false };
+  render();
+}
+
+function youtubePodcastTracks(videos) {
+  return videos.filter((video) => /^[\w-]{11}$/.test(video.videoId || '')).map((video) => ({
+    id: `yt:${video.videoId}`,
+    type: 'yt',
+    videoId: video.videoId,
+    title: decode(video.title),
+    artist: decode(video.artist),
+    cover: video.cover,
+    duration: video.seconds,
+  }));
+}
+
+async function loadPodcastSuggestions() {
+  const results = await Promise.allSettled(PODCAST_SUGGESTION_TOPICS.map(async (topic) => ({
+    title: topic.title,
+    tracks: youtubePodcastTracks(await window.gmajna.podcastYouTubeSearch(topic.query)).slice(0, 4),
+  })));
+  const sections = [];
+  const seen = new Set();
+  const failures = [];
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      failures.push(result.reason);
+      continue;
+    }
+    const tracks = result.value.tracks.filter((track) => {
+      if (seen.has(track.videoId)) return false;
+      seen.add(track.videoId);
+      return true;
+    });
+    if (tracks.length) sections.push({ title: result.value.title, tracks });
+  }
+  podcastSuggestions = {
+    status: 'loaded',
+    sections,
+    error: failures.length ? 'Priporočil z YouTuba ni bilo mogoče naložiti.' : '',
+  };
+  if (failures.length) console.error('YouTube podcast recommendation requests failed:', failures);
+  if (view === 'podcasts') render();
+}
+
+async function searchPodcasts(query, source = podcastSearch.source) {
   const requestId = ++podcastSearchId;
   if (!query) {
-    podcastSearch = { query: '', results: [], error: '', loading: false };
+    podcastSearch = { query: '', results: [], error: '', loading: false, source };
     render();
     return;
   }
-  podcastSearch = { query, results: [], error: '', loading: true };
+  podcastSearch = { query, results: [], error: '', loading: true, source };
   render();
   try {
-    const results = await window.gmajna.podcastSearch(query);
+    const results = source === 'youtube'
+      ? await window.gmajna.podcastYouTubeSearch(query)
+      : await window.gmajna.podcastSearch(query);
     if (requestId !== podcastSearchId) return;
-    podcastSearch.results = results;
+    podcastSearch.results = source === 'youtube' ? youtubePodcastTracks(results) : results;
     if (!results.length) podcastSearch.error = 'Ni rezultatov za ta iskalni niz.';
   } catch (error) {
     if (requestId !== podcastSearchId) return;
@@ -2533,6 +2595,10 @@ function radioStationCards() {
 
 const views = {
   podcasts() {
+    if (podcastSuggestions.status === 'idle') {
+      podcastSuggestions = { ...podcastSuggestions, status: 'loading' };
+      queueMicrotask(loadPodcastSuggestions);
+    }
     const topics = [
       ['Slovenski podcasti', 'slovenski podcast'],
       ['Novice', 'news podcast'],
@@ -2558,6 +2624,17 @@ const views = {
         h('h2', {}, 'Podcasti'),
         h('div', { class: 'podcast-intro' }, 'Poišči oddaje v katalogu in poslušaj njihove najnovejše epizode.')),
       h('section', { class: 'podcast-discovery' },
+        h('div', { class: 'podcast-sources' },
+          h('button', {
+            type: 'button',
+            class: `podcast-source${podcastSearch.source === 'apple' ? ' active' : ''}`,
+            onclick: () => selectPodcastSource('apple'),
+          }, 'Apple Podcasts'),
+          h('button', {
+            type: 'button',
+            class: `podcast-source${podcastSearch.source === 'youtube' ? ' active' : ''}`,
+            onclick: () => selectPodcastSource('youtube'),
+          }, 'YouTube')),
         h('div', { class: 'podcast-toolbar' },
           h('label', { class: 'podcast-searchbox' },
             h('span', { class: 'podcast-search-icon', 'aria-hidden': 'true' }, '⌕'),
@@ -2573,9 +2650,23 @@ const views = {
         !podcastSearch.query && !podcastSearch.loading
           ? h('div', { class: 'podcast-hint' }, 'Vpiši ime podcasta in pritisni Enter.') : null,
         podcastSearch.error ? h('div', { class: 'podcast-error' }, podcastSearch.error) : null),
+      h('section', { class: 'podcast-section podcast-suggestions' },
+        h('h3', {}, 'Priporočila z YouTuba'),
+        podcastSuggestions.status === 'loading'
+          ? h('div', { class: 'podcast-status' }, h('span', { class: 'podcast-spinner' }), 'Nalagam priporočila …')
+          : null,
+        podcastSuggestions.error ? h('div', { class: 'podcast-error' }, podcastSuggestions.error) : null,
+        ...podcastSuggestions.sections.map((section) => h('div', { class: 'podcast-suggestion-group' },
+          h('h4', {}, section.title),
+          h('div', { class: 'grid podcast-grid' }, section.tracks.map((track) => cardEl(track, section.tracks))))),
+        podcastSuggestions.status === 'loaded' && !podcastSuggestions.sections.length && !podcastSuggestions.error
+          ? h('div', { class: 'podcast-empty' }, 'Trenutno ni priporočil. Poskusi iskanje na YouTubu.') : null),
       podcastSearch.results.length ? h('section', { class: 'podcast-section' },
-        h('h3', {}, 'Rezultati iskanja'),
-        h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
+        h('h3', {}, podcastSearch.source === 'youtube' ? 'Epizode na YouTubu' : 'Rezultati iskanja'),
+        podcastSearch.source === 'youtube'
+          ? h('div', { class: 'podcast-episode-results' },
+            ...trackRows(podcastSearch.results, 'Ni rezultatov za ta iskalni niz.'))
+          : h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
           const subscribed = db.podcasts.some((item) => String(item.id) === String(show.id));
           return podcastCard(show, subscribed);
         }))) : null,
@@ -2584,7 +2675,9 @@ const views = {
         db.podcasts.length
           ? h('div', { class: 'grid podcast-grid' }, db.podcasts.map((show) => podcastCard(show, true)))
           : h('div', { class: 'podcast-empty' }, 'Še nisi naročen na noben podcast. Poišči oddajo zgoraj.')),
-      h('div', { class: 'podcast-credit' }, 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'))];
+      h('div', { class: 'podcast-credit' }, podcastSearch.source === 'youtube'
+        ? 'YouTube · Epizode se predvajajo v vgrajenem YouTube predvajalniku.'
+        : 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'))];
   },
   'podcast-show'() {
     const show = db.podcasts.find((item) => String(item.id) === String(viewArg))
