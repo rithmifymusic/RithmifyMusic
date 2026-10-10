@@ -1,4 +1,4 @@
-// Synced lyrics (Spotify-style): side panel preview and full-screen view.
+﻿// Synced lyrics (Spotify-style): side panel preview and full-screen view.
 const lyricsCache = new Map();
 
 function parseLrc(text) {
@@ -31,7 +31,7 @@ function fillLyricsBox(box, track) {
   box.dataset.id = track.id;
   box._lines = null;
   box._active = -1;
-  box.replaceChildren(h('div', { class: 'lnote' }, 'Iščem besedilo …'));
+  box.replaceChildren(h('div', { class: 'lnote' }, 'IÅ¡Äem besedilo â€¦'));
   ensureLyrics(track).then((data) => {
     if (!box.isConnected || box.dataset.id !== track.id) return;
     const own = (db.lyrics && db.lyrics[track.id]) || '';
@@ -39,7 +39,7 @@ function fillLyricsBox(box, track) {
       box._lines = data.lines;
       box.replaceChildren(...data.lines.map((l, i) => h('div', {
         class: 'll', 'data-i': String(i), onclick: () => engineSeek(l.t),
-      }, l.text || '♪')));
+      }, l.text || 'â™ª')));
       box.scrollTop = 0;
     } else if (own || (data && data.plain)) {
       box.replaceChildren(...(own || data.plain).split(/\r?\n/).map((t) => h('div', { class: 'lp' }, t || ' ')));
@@ -76,16 +76,41 @@ function tickLyrics() {
 }
 setInterval(tickLyrics, 250);
 
+// Main-app lyrics view covers only the content area, so the right panel (now playing + next) stays visible.
+function layoutLyricsFull() {
+  const el = document.getElementById('lyrics-full');
+  if (!el) return;
+  const r = document.getElementById('content').getBoundingClientRect();
+  Object.assign(el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+}
 function closeLyricsFull() {
   document.getElementById('lyrics-full')?.remove();
+  document.getElementById('btn-lyr')?.classList.remove('on');
 }
 function openLyricsFull() {
   closeLyricsFull();
-  if (!cur) return;
+  if (!cur || cur.type === 'radio') return;
+  if (document.body.classList.contains('np')) return;
   const top = h('div', { class: 'lf-top' },
     h('div', {}, h('div', { class: 'lf-title' }, cur.title), h('div', { class: 'lf-artist' }, cur.artist)),
     h('button', { class: 'lf-close', title: 'Zapri', onclick: closeLyricsFull }, '✕'));
-  const overlay = h('div', { id: 'lyrics-full' }, top, lyricsBox('lf-box'));
-  document.body.append(overlay);
+  document.body.append(h('div', { id: 'lyrics-full' }, top, lyricsBox('lf-box')));
+  document.getElementById('btn-lyr')?.classList.add('on');
+  if (document.getElementById('side-panel').hidden) toggleSide(true);
+  layoutLyricsFull();
 }
+function toggleLyricsFull() {
+  if (document.getElementById('lyrics-full')) closeLyricsFull(); else openLyricsFull();
+}
+window.addEventListener('resize', layoutLyricsFull);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLyricsFull(); });
+document.getElementById('btn-lyr').onclick = toggleLyricsFull;
+document.getElementById('sidebar').addEventListener('click', closeLyricsFull);
+// Keep the title in the overlay in sync when the track changes.
+setInterval(() => {
+  const el = document.getElementById('lyrics-full');
+  if (!el || !cur) return;
+  const t = el.querySelector('.lf-title');
+  if (t && t.textContent !== cur.title) { t.textContent = cur.title; el.querySelector('.lf-artist').textContent = cur.artist; }
+}, 500);
+

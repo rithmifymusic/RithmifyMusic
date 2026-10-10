@@ -37,6 +37,7 @@ const ICON = {
   home: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/></svg>',
   radio: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/></svg>',
   viz: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/></svg>',
+  lyr: svg('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z'),
   now: svg('M3 4h18v12H3zm2 2v8h14V6zm4 14h6v2H9z'),
   queue: svg('M3 6h13v2H3zm0 5h13v2H3zm0 5h9v2H3zm15-5v7.200a2.800 2.800 0 1 0 2 2.600V13h3v-2z'),
   mini: svg('M14 3h7v7h-2V6.400l-5.300 5.300-1.400-1.400L17.600 5H14zM3 14h2v3.600l5.300-5.300 1.400 1.400L6.400 19H10v2H3z', 18),
@@ -1349,7 +1350,7 @@ $('#btn-repeat').onclick = () => {
   b.innerHTML = ICON.repeat + (repeat === 'one' ? '<sup>1</sup>' : '');
 };
 for (const [id, icon] of [['#btn-shuffle', ICON.shuffle], ['#btn-prev', ICON.prev], ['#btn-next', ICON.next],
-  ['#btn-repeat', ICON.repeat], ['#btn-viz', ICON.viz], ['#btn-lyrics', ICON.now], ['#btn-queue', ICON.queue], ['#btn-mini', ICON.mini]]) {
+  ['#btn-repeat', ICON.repeat], ['#btn-viz', ICON.viz], ['#btn-lyrics', ICON.now], ['#btn-lyr', ICON.lyr], ['#btn-queue', ICON.queue], ['#btn-mini', ICON.mini]]) {
   $(id).innerHTML = icon;
 }
 $('#btn-home').innerHTML = ICON.home;
@@ -1485,6 +1486,7 @@ function buildNp() {
     h('span', { class: 'brand-whole np-logo', role: 'img', 'aria-label': 'Rythmify' }),
     h('div', { class: 'np-side np-right' }, h('div', { class: 'np-sh' }, 'Naslednje'), npRefs.list),
     npRefs.art,
+    h('div', { class: 'np-lyrics' }, lyricsBox('np-box')),
     h('div', { class: 'np-body' },
       h('div', { class: 'np-meta' }, npRefs.title, npRefs.artist),
       h('div', { class: 'np-seek' }, npRefs.pos, npRefs.seek, npRefs.dur),
@@ -1496,6 +1498,10 @@ function buildNp() {
         ibtn('repeat', ICON.repeat, 'Ponovi', () => $('#btn-repeat').click())),
       h('div', { class: 'np-extra' },
         ibtn('like', ICON.heartO, 'Všeček', () => { if (cur) { toggleLike(cur); syncNp(); renderSidebar(); } }),
+        ibtn('lyr', ICON.lyr, 'Besedilo', () => {
+          const on = document.body.classList.toggle('np-lyrics');
+          npRefs.lyr.classList.toggle('on', on);
+        }),
         h('div', { class: 'np-vol' }, npRefs.vol))));
   document.body.append(el);
   el.addEventListener('mousemove', npWake);
@@ -1658,6 +1664,7 @@ async function openNp() {
   npTrackId = undefined;
   el.hidden = false;
   document.body.classList.add('np');
+  closeLyricsFull();
   if (!fullscreen) { await toggleFullscreen(); npEnteredFs = true; }
   syncNp();
   npWake();
@@ -1666,7 +1673,8 @@ async function closeNp() {
   if (!npOpen) return;
   npOpen = false;
   $('#np').hidden = true;
-  document.body.classList.remove('np', 'np-video', 'np-idle');
+  document.body.classList.remove('np', 'np-video', 'np-idle', 'np-lyrics');
+  npRefs.lyr?.classList.remove('on');
   clearTimeout(npIdleTimer);
   if (npEnteredFs && fullscreen) await toggleFullscreen();
   npEnteredFs = false;
