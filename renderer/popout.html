@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rythmify – Mini predvajalnik</title>
+<link rel="stylesheet" href="popout.css">
+</head>
+<body>
+  <main id="player">
+    <section class="track">
+      <img id="cover" alt="">
+      <div class="track-info">
+        <strong id="title">Nič se ne predvaja</strong>
+        <span id="artist"></span>
+      </div>
+    </section>
+    <section class="controls">
+      <div class="buttons">
+        <button id="previous" title="Prejšnja skladba" aria-label="Prejšnja skladba">|◀</button>
+        <button id="toggle" class="play" title="Predvajaj" aria-label="Predvajaj">▶</button>
+        <button id="next" title="Naslednja skladba" aria-label="Naslednja skladba">▶|</button>
+      </div>
+      <div class="timeline">
+        <span id="position">0:00</span>
+        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Položaj skladbe">
+        <span id="duration">0:00</span>
+      </div>
+    </section>
+    <section class="extras">
+      <label title="Glasnost"><span aria-hidden="true">♪</span><input id="volume" type="range" min="0" max="100" value="80" aria-label="Glasnost"></label>
+      <button id="close" title="Zapri mini predvajalnik" aria-label="Zapri mini predvajalnik">×</button>
+    </section>
+  </main>
+  <script src="popout.js"></script>
+</body>
+</html>

@@ -722,6 +722,18 @@ const getDur = () => {
   const duration = activeAudio().duration;
   return isFinite(duration) ? duration : cur.duration || 0;
 };
+function publishPopoutState() {
+  window.gmajna.sendPopoutState({
+    title: cur?.title || '',
+    artist: cur?.artist || (cur?.type === 'radio' ? 'Radio v živo' : ''),
+    cover: cur?.cover || '',
+    position: getPos(),
+    duration: getDur(),
+    playing: isPlaying(),
+    volume: Number(db.settings.volume) || 0,
+    accent: getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#ff3d71',
+  });
+}
 
 function loadYT() {
   if (ytReady) return ytReady;
@@ -1332,6 +1344,17 @@ function seekTo(sec) {
   persistPlayback();
 }
 
+window.gmajna.onPopoutCommand((action, value) => {
+  if (action === 'toggle') togglePlay();
+  else if (action === 'previous') prev();
+  else if (action === 'next') next(false);
+  else if (action === 'seek') seekTo(Number(value) || 0);
+  else if (action === 'volume') {
+    $('#volume').value = Math.max(0, Math.min(100, Number(value) || 0));
+    $('#volume').dispatchEvent(new Event('input'));
+  } else if (action === 'state-request') publishPopoutState();
+});
+
 function enqueue(track) {
   queue.push(track);
   if (!cur && qIndex < 0) qIndex = 0;
@@ -1539,6 +1562,7 @@ setInterval(() => {
   }
   updatePlayBtn();
   syncNp();
+  publishPopoutState();
 }, 400);
 
 // Crossfade: the next track starts when `fade` seconds remain, so both fade over the same period.
@@ -1632,10 +1656,8 @@ $('#btn-addpl').onclick = () => { if (cur) addToPlaylist(cur); else toast('Najpr
 updatePlayBtn();
 $('#btn-like').onclick = () => { if (cur) { toggleLike(cur); if (view === 'liked') render(); renderSidebar(); } };
 $('#btn-mini').onclick = () => {
-  const on = !document.body.classList.contains('mini');
-  document.body.classList.toggle('mini', on);
-  window.gmajna.setMini(on);
-  $('#btn-mini').title = on ? 'Nazaj na celotno aplikacijo' : 'Mini predvajalnik';
+  void window.gmajna.openPopout();
+  $('#btn-mini').title = 'Odpri mini predvajalnik';
 };
 let fullscreen = false;
 const toggleFullscreen = async () => { fullscreen = await window.gmajna.setFullscreen(!fullscreen); };

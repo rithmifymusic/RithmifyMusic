@@ -19,6 +19,7 @@ const MIME = {
 };
 
 let win;
+let popoutWin = null;
 let port = 0;
 let httpServer = null;
 let dataFile;
@@ -564,7 +565,6 @@ ipcMain.handle('app:openExternal', (_e, url) => {
   if (typeof url === 'string' && /^https:\/\//.test(url)) shell.openExternal(url);
 });
 
-let normalBounds = null;
 let updaterRef = null;
 
 // Discord Rich Presence ("Listening to Rythmify"); silently does nothing if Discord is not running.
@@ -625,20 +625,44 @@ ipcMain.handle('win:fullscreen', (_e, on) => {
   win.setFullScreen(typeof on === 'boolean' ? on : !win.isFullScreen());
   return win.isFullScreen();
 });
-ipcMain.handle('win:mini', (_e, on) => {
-  if (!win) return;
-  if (on) {
-    if (win.isFullScreen()) win.setFullScreen(false);
-    if (win.isMaximized()) win.unmaximize();
-    normalBounds = win.getBounds();
-    win.setMinimumSize(520, 110);
-    win.setSize(900, 110, true);
-    win.setAlwaysOnTop(true);
-  } else {
-    win.setAlwaysOnTop(false);
-    win.setMinimumSize(900, 600);
-    if (normalBounds) win.setBounds(normalBounds, true);
+ipcMain.handle('win:popout', (_e, open = true) => {
+  if (!open) {
+    if (popoutWin && !popoutWin.isDestroyed()) popoutWin.close();
+    return false;
   }
+  if (popoutWin && !popoutWin.isDestroyed()) {
+    popoutWin.show();
+    popoutWin.focus();
+    return true;
+  }
+  popoutWin = new BrowserWindow({
+    width: 460, height: 190, minWidth: 380, minHeight: 170,
+    resizable: true, backgroundColor: '#111114', title: 'Rythmify – Mini predvajalnik',
+    autoHideMenuBar: true, alwaysOnTop: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true, nodeIntegration: false, sandbox: true,
+      backgroundThrottling: false,
+    },
+  });
+  popoutWin.setAlwaysOnTop(true, 'floating');
+  popoutWin.removeMenu();
+  popoutWin.on('closed', () => { popoutWin = null; });
+  popoutWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  popoutWin.loadURL(`http://127.0.0.1:${port}/popout.html`);
+  return true;
+});
+ipcMain.handle('win:popoutClose', (event) => {
+  if (popoutWin && !popoutWin.isDestroyed() && event.sender === popoutWin.webContents) popoutWin.close();
+});
+ipcMain.on('popout:state', (event, state) => {
+  if (!popoutWin || popoutWin.isDestroyed() || event.sender !== win?.webContents) return;
+  popoutWin.webContents.send('popout:state', state);
+});
+ipcMain.on('popout:command', (event, action, value) => {
+  if (!win || win.isDestroyed() || !popoutWin || event.sender !== popoutWin.webContents) return;
+  if (!['toggle', 'previous', 'next', 'seek', 'volume', 'state-request'].includes(action)) return;
+  win.webContents.send('popout:command', action, value);
 });
 
 if (!app.requestSingleInstanceLock()) app.quit();
