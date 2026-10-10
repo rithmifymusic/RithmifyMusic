@@ -1240,6 +1240,27 @@ function updateNow() {
   }
   if (!$('#side-panel').hidden) renderSidePanel();
 }
+// Discord status: send only when the track, play state or position (seek) changes.
+let dcLast = { id: '', playing: null, pos: 0, at: 0, on: null };
+setInterval(() => {
+  const on = !!db && db.settings.discord !== false && !!account;
+  if (!on || !cur) {
+    if (dcLast.on !== false || dcLast.id) { dcLast = { id: '', playing: null, pos: 0, at: 0, on: false }; window.gmajna.discordUpdate(null); }
+    return;
+  }
+  const playing = isPlaying();
+  const pos = getPos();
+  const expected = dcLast.pos + (dcLast.playing ? (Date.now() - dcLast.at) / 1000 : 0);
+  if (dcLast.id === cur.id && dcLast.playing === playing && dcLast.on && Math.abs(pos - expected) < 3) return;
+  dcLast = { id: cur.id, playing, pos, at: Date.now(), on: true };
+  const radio = cur.type === 'radio';
+  window.gmajna.discordUpdate({
+    title: cur.title, artist: radio ? 'Radio' : cur.artist, cover: cur.cover || '',
+    playing, position: pos, duration: radio ? 0 : getDur(),
+    url: cur.type === 'yt' && cur.videoId ? `https://www.youtube.com/watch?v=${cur.videoId}` : '',
+  });
+}, 2000);
+
 function updatePlayBtn() {
   const playing = isPlaying();
   $('#btn-play').innerHTML = playing ? ICON.pause : ICON.play;
@@ -2526,6 +2547,9 @@ const views = {
                 : r.status === 'dev' ? `Razvojna različica ${r.current}` : `Napaka pri preverjanju: ${r.error}`;
           }, 'btn sec'));
       })(),
+      h('h3', {}, 'Discord'),
+      h('div', { class: 'setting' }, h('label', {}, 'Prikaži, kaj poslušam, na Discordu'),
+        h('input', { type: 'checkbox', checked: s.discord !== false ? 'checked' : null, onchange: (e) => { s.discord = e.target.checked; save(); } })),
       h('h3', {}, 'Spotify'),
       h('div', { class: 'setting' }, h('label', {}, 'Spotify (uvoz seznamov)'),
         h('span', {}, spAuth?.access ? 'Povezan ✓ ' : 'Ni povezan '),

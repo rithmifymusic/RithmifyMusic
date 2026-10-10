@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('gmajna', {
   removeFile: (file) => ipcRenderer.invoke('library:remove', file),
   openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
   getVersion: () => ipcRenderer.invoke('app:version'),
+  discordUpdate: (payload) => ipcRenderer.invoke('discord:update', payload),
   checkUpdate: () => ipcRenderer.invoke('app:checkUpdate'),
   setFullscreen: (on) => ipcRenderer.invoke('win:fullscreen', on),
   setMini: (on) => ipcRenderer.invoke('win:mini', on),

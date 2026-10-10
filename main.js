@@ -458,6 +458,51 @@ ipcMain.handle('app:openExternal', (_e, url) => {
 
 let normalBounds = null;
 let updaterRef = null;
+
+// Discord Rich Presence ("Listening to Rythmify"); silently does nothing if Discord is not running.
+const DISCORD_APP_ID = '1557801639119954030';
+let discord = null;
+let discordReady = false;
+let discordConnecting = false;
+async function discordConnect() {
+  if (discordReady || discordConnecting) return;
+  discordConnecting = true;
+  try {
+    const { Client } = require('@xhayper/discord-rpc');
+    const client = new Client({ clientId: DISCORD_APP_ID });
+    client.on('ready', () => { discordReady = true; });
+    client.on('disconnected', () => { discordReady = false; discord = null; });
+    await client.login();
+    discord = client;
+  } catch { discord = null; discordReady = false; }
+  discordConnecting = false;
+}
+ipcMain.handle('discord:update', async (_e, p) => {
+  try {
+    if (!p) {
+      if (discord && discordReady) await discord.user?.clearActivity();
+      return;
+    }
+    if (!discordReady) { await discordConnect(); if (!discordReady) return; }
+    const str = (v, n) => String(v || '').slice(0, n);
+    const activity = {
+      type: 2,
+      details: str(p.title, 128) || 'Rythmify',
+      state: str(p.artist, 128) || undefined,
+      largeImageKey: /^https:\/\//.test(p.cover || '') ? p.cover : undefined,
+      largeImageText: str(p.title, 128) || 'Rythmify',
+      instance: false,
+    };
+    if (p.playing && p.duration > 0) {
+      const start = Date.now() - Math.round(p.position * 1000);
+      activity.startTimestamp = new Date(start);
+      activity.endTimestamp = new Date(start + Math.round(p.duration * 1000));
+    }
+    if (/^https:\/\//.test(p.url || '')) activity.buttons = [{ label: 'Odpri na YouTube', url: p.url }];
+    await discord.user?.setActivity(activity);
+  } catch { discordReady = false; discord = null; }
+});
+app.on('before-quit', () => { try { discord?.destroy(); } catch {} });
 ipcMain.handle('app:version', () => app.getVersion());
 ipcMain.handle('app:checkUpdate', async () => {
   if (!app.isPackaged || !updaterRef) return { status: 'dev', current: app.getVersion() };
