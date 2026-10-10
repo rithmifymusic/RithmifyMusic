@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, shell, session, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, shell, session, safeStorage, nativeImage } = require('electron');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -274,16 +274,22 @@ function startAdSkipper() {
 }
 
 function createWindow() {
+  const iconPath = process.platform === 'win32' && app.isPackaged
+    ? path.join(process.resourcesPath, 'rythmify.ico')
+    : path.join(__dirname, 'renderer', 'img', process.platform === 'win32' ? 'rythmify.ico' : 'logo.png');
+  const appIcon = nativeImage.createFromPath(iconPath);
+  if (appIcon.isEmpty()) throw new Error(`Neveljavna ikona aplikacije: ${iconPath}`);
   win = new BrowserWindow({
     width: 1280, height: 800, minWidth: 900, minHeight: 600,
     backgroundColor: '#121212', title: 'Rythmify', autoHideMenuBar: true,
-    icon: path.join(__dirname, 'renderer', 'img', process.platform === 'win32' ? 'rythmify.ico' : 'logo.png'),
+    icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: true,
       backgroundThrottling: false, autoplayPolicy: 'no-user-gesture-required',
     },
   });
+  win.setIcon(appIcon);
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https:\/\//.test(url)) shell.openExternal(url);
     return { action: 'deny' };

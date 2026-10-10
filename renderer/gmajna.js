@@ -44,11 +44,12 @@ const ICON = {
 const SI_RADIO_STATIONS = [
   { id: 'val202', name: 'Val 202', freq: '98.9 FM', style: 'Pop · rock · aktualno', group: 'Pop', color: '#f07043', stream: 'https://mp3.rtvslo.si/val202', page: 'https://siradio.si/val202/', logo: 'val202', bands: ['FM', 'DAB'] },
   { id: 'ena', name: 'Radio 1', freq: '89.7 FM', style: 'Največji hiti', group: 'Pop', color: '#ee4266', stream: 'https://live.radio.si/Radio1', page: 'https://siradio.si/ena/', logo: 'ena', bands: ['FM', 'DAB'] },
-  { id: 'frajer', name: 'Radio Frajer', freq: 'Spletni radio', style: 'Domaci in tuji hiti', group: 'Domaca', color: '#cf5b47', stream: 'https://live.radio.si/Frajer', page: 'https://siradio.si/radio-frajer/', logo: 'radio-frajer', bands: ['DAB'], streams: ['https://live.radio.si/Frajer'] },
-  { id: 'juboks', name: 'Radio Juboks', freq: 'DAB+', style: 'Domaci in tuji hiti � nostalgija', group: 'DAB', color: '#d4a63c', stream: 'https://stream2.nextmedia.si/hls/jub/live.m3u8', page: 'https://www.juboks.si/live/juboks', logo: 'juboks', bands: ['DAB'], streams: ['https://stream2.nextmedia.si/hls/jub/live.m3u8', 'https://stream.nextmedia.si/proxy/juboks_1?mp=/juboks?uid=jubweb'] },
+  { id: 'frajer', name: 'Radio Frajer', freq: 'Spletni radio', style: 'Domaci in tuji hiti', group: 'Domaca', color: '#cf5b47', stream: 'https://stream.nextmedia.si/proxy/frajer_1?mp=/frajer', page: 'https://radiofrajer.si/', logo: 'radio-frajer', bands: ['DAB'] },
+  { id: 'juboks', name: 'Radio Juboks', freq: 'DAB+', style: 'Domaci in tuji hiti � nostalgija', group: 'DAB', color: '#d4a63c', stream: 'https://stream.nextmedia.si/proxy/juboks_1?mp=/juboks?uid=jubweb', page: 'https://www.juboks.si/live/juboks', logo: 'juboks', bands: ['DAB'] },
   { id: 'center-x', name: 'Radio Center X', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
-  { id: 'radio80', name: 'Radio 1 80-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 80-ih', group: '80-ta', color: '#d47e39', stream: 'https://radio.si/Radio80', page: 'https://radio80.si/', logo: 'radio80', bands: ['DAB'], streams: ['https://radio.si/Radio80'] },
-  { id: 'radio90', name: 'Radio 1 90-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 90-ih', group: '90-ta', color: '#5c77bd', stream: 'https://radio.si/Radio90-v-zivo', page: 'https://www.radio1.si/', logo: 'ena', bands: ['DAB'], streams: ['https://radio.si/Radio90-v-zivo'] },  { id: 'aktual', name: 'Radio Aktual', freq: '100.2 FM', style: 'Slovenski in domači hiti', group: 'Domača', color: '#6e5be8', stream: 'https://live.radio.si/Aktual', page: 'https://siradio.si/aktual/', logo: 'aktual', bands: ['FM', 'DAB'] },
+  { id: 'radio80', name: 'Radio 1 80-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 80-ih', group: '80-ta', color: '#d47e39', stream: 'https://live.radio1.si/Radio80', page: 'https://radio.svet24.si/Radio80-v-zivo', logo: 'radio80', bands: ['DAB'] },
+  { id: 'radio90', name: 'Radio 1 90-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 90-ih', group: '90-ta', color: '#5c77bd', stream: 'https://live.radio1.si/Radio90', page: 'https://radio.svet24.si/Radio90-v-zivo', logo: 'ena', bands: ['DAB'] },
+  { id: 'aktual', name: 'Radio Aktual', freq: '100.2 FM', style: 'Slovenski in domači hiti', group: 'Domača', color: '#6e5be8', stream: 'https://live.radio.si/Aktual', page: 'https://siradio.si/aktual/', logo: 'aktual', bands: ['FM', 'DAB'] },
   { id: 'city', name: 'Radio City', freq: '100.8 FM', style: 'Maribor · hiti in humor', group: 'Pop', color: '#e2a533', stream: 'https://stream1.radiocity.si/CityMp3128.mp3', page: 'https://siradio.si/city/', logo: 'city', bands: ['FM', 'DAB'], streams: ['https://stream1.radiocity.si/CityMp3128.mp3', 'http://82.149.22.34:8000/CityMp364mono.mp3'] },
   { id: 'center', name: 'Radio Center', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
   { id: 'capris', name: 'Radio Capris', freq: '91.7 FM', style: 'Primorska · pop hiti', group: 'Pop', color: '#3286e8', stream: 'https://stream.exit.si/live', page: 'https://siradio.si/capris/', logo: 'capris', bands: ['FM', 'DAB'] },
@@ -168,6 +169,7 @@ function currentAccountApiUrl() {
 function accountApiError(r, action = 'Zahteva') {
   if (r.status === 404) return 'API vrača HTTP 404. Preveri URL skupnega Rythmify strežnika.';
   if (r.status === 0) return `Računovodski strežnik ni dosegljiv${r.error ? `: ${r.error}` : '.'}`;
+  if (r.status === 401 && action === 'Prijava') return 'Napačno uporabniško ime ali geslo.';
   if (r.json?.error) return r.json.error;
   return `${action} ni uspela (HTTP ${r.status}).`;
 }
@@ -427,26 +429,41 @@ function showAuth(mode = root.accounts.length ? 'login' : 'register') {
         } else {
           const key = uname.toLowerCase();
           let acc = root.accounts.find((a) => (a.email || '') === key || a.name.toLowerCase() === key);
-          if (!acc || (await hashPw(pw.value, acc.salt)) !== acc.hash) {
+          const localLoginValid = !!(acc && acc.salt && acc.hash && (await hashPw(pw.value, acc.salt)) === acc.hash);
+          if (!navigator.onLine) {
+            if (!localLoginValid) {
+              err.textContent = 'Brez povezave ni mogoče preveriti tega računa v strežniku.';
+              return;
+            }
+            toast('Brez povezave: prijavljen je lokalni profil; sinhronizacija ni na voljo.');
+          } else {
             const s = await cloud('GET', '/api/salt?key=' + encodeURIComponent(key));
-            if (!s.ok) { err.textContent = accountApiError(s, 'Prijava'); return; }
-            if (typeof s.json.salt !== 'string' || !s.json.salt) {
-              err.textContent = 'Strežnik je vrnil neveljavne prijavne podatke.';
-              return;
+            if (!s.ok) {
+              if (localLoginValid && s.status === 0) {
+                toast('Strežnik ni dosegljiv: prijavljen je lokalni profil; sinhronizacija ni na voljo.');
+              } else {
+                err.textContent = accountApiError(s, 'Prijava');
+                return;
+              }
+            } else {
+              if (typeof s.json.salt !== 'string' || !s.json.salt) {
+                err.textContent = 'Strežnik je vrnil neveljavne prijavne podatke.';
+                return;
+              }
+              const hash = await hashPw(pw.value, s.json.salt);
+              const r = await cloud('POST', '/api/login', { key, hash });
+              if (!r.ok) { err.textContent = accountApiError(r, 'Prijava'); return; }
+              const c = r.json.account;
+              if (!c || typeof r.json.token !== 'string' || !r.json.token) {
+                err.textContent = 'Strežnik ni vrnil veljavnega računa. Preveri njegovo različico.';
+                return;
+              }
+              const local = root.accounts.find((a) => a.id === c.id);
+              acc = local || { id: c.id, data: null };
+              Object.assign(acc, { name: c.name, email: c.email, color: c.color, salt: c.salt, hash: c.hash, token: r.json.token, syncedAt: c.updatedAt, dirty: false });
+              acc.data = { ...mergeData(c.data), library: local?.data?.library || [] };
+              if (!local) root.accounts.push(acc);
             }
-            const hash = await hashPw(pw.value, s.json.salt);
-            const r = await cloud('POST', '/api/login', { key, hash });
-            if (!r.ok) { err.textContent = accountApiError(r, 'Prijava'); return; }
-            const c = r.json.account;
-            if (!c || typeof r.json.token !== 'string' || !r.json.token) {
-              err.textContent = 'Strežnik ni vrnil veljavnega računa. Preveri njegovo različico.';
-              return;
-            }
-            const local = root.accounts.find((a) => a.id === c.id);
-            acc = local || { id: c.id, data: null };
-            Object.assign(acc, { name: c.name, email: c.email, color: c.color, salt: c.salt, hash: c.hash, token: r.json.token, syncedAt: c.updatedAt, dirty: false });
-            acc.data = { ...mergeData(c.data), library: local?.data?.library || [] };
-            if (!local) root.accounts.push(acc);
           }
           acc.remember = remember.checked;
           enterAccount(acc);
