@@ -114,3 +114,16 @@ setInterval(() => {
   if (t && t.textContent !== cur.title) { t.textContent = cur.title; el.querySelector('.lf-artist').textContent = cur.artist; }
 }, 500);
 
+
+// Christmas lights stop at the edge of the content area (before the right panel).
+function syncXmasWidth() {
+  if (!document.body.classList.contains('xmas')) return;
+  const c = document.getElementById('content');
+  if (!c) return;
+  const r = c.getBoundingClientRect();
+  const s = document.documentElement.style;
+  s.setProperty('--xmas-w', `${Math.max(0, r.right - r.left)}px`);
+  s.setProperty('--xmas-l', `${r.left}px`);
+}
+setInterval(syncXmasWidth, 400);
+window.addEventListener('resize', syncXmasWidth);
