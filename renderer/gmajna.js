@@ -134,7 +134,7 @@ const defaultDb = () => ({
   library: [], liked: [], playlists: [], history: [], lyrics: {},
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
-    speed: 1, normalize: false, viz: 'bars', preset: 'flat', skipIntro: 0, skipOutro: 0,
+    speed: 1, normalize: false, viz: 'bars', vizColor: 'theme', vizHeight: 52, vizGlow: true, vizSmoothing: 0.72, preset: 'flat', skipIntro: 0, skipOutro: 0,
     ambient: true, ambientCustom: '', ambientPulse: true, snow: false, snowModeConfigured: true, particles: true,
   },
   peerId: '',
@@ -1219,8 +1219,9 @@ async function newPlaylist() {
 
 // ---------- Player UI ----------
 function coverEl(t, cls = 'cover') {
-  if (t.cover) {
-    return h('img', { class: cls, src: t.cover, loading: 'lazy', alt: '', referrerpolicy: 'no-referrer' });
+  const cover = t.cover || (t.type === 'radio' ? radioStationLogoUrl(t.station) : '');
+  if (cover) {
+    return h('img', { class: cls, src: cover, loading: 'lazy', alt: '', referrerpolicy: 'no-referrer' });
   }
   const hue = [...(t.title || '?')].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
   return h('div', {
@@ -1240,14 +1241,25 @@ function updateNow() {
   $('#btn-like').innerHTML = liked ? ICON.heart : ICON.heartO;
   $('#btn-like').classList.toggle('on', liked);
   const nc = $('#now-cover');
-  if (cur && cur.cover) { nc.src = cur.cover; nc.style.display = 'block'; } else nc.style.display = 'none';
+  const cover = cur?.cover || (radio ? radioStationLogoUrl(cur.station) : '');
+  if (cover) { nc.src = cover; nc.style.display = 'block'; } else nc.style.display = 'none';
+  const stationButton = $('#now-station-btn');
+  const stationLogo = $('#now-station-logo');
+  if (radio && cover) {
+    stationLogo.src = cover;
+    stationButton.title = `${cur.title} · odpri slovenske radijske postaje`;
+    stationButton.hidden = false;
+  } else {
+    stationLogo.removeAttribute('src');
+    stationButton.hidden = true;
+  }
   updatePlayBtn();
   syncNp();
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = cur ? new MediaMetadata({
       title: cur.title,
       artist: cur.artist,
-      artwork: cur.cover ? [{ src: cur.cover }] : [],
+      artwork: cover ? [{ src: cover }] : [],
     }) : null;
   }
   if (!$('#side-panel').hidden) renderSidePanel();
@@ -1362,6 +1374,11 @@ for (const [id, icon] of [['#btn-shuffle', ICON.shuffle], ['#btn-prev', ICON.pre
   $(id).innerHTML = icon;
 }
 $('#btn-home').innerHTML = ICON.home;
+$('#now-station-btn').onclick = () => {
+  view = 'stations';
+  viewArg = null;
+  renderAll();
+};
 $('#btn-viz').onclick = () => { view = 'visualizer'; viewArg = null; renderAll(); };
 $('#btn-like').innerHTML = ICON.heartO;
 $('#btn-addpl').innerHTML = ICON.plus;
@@ -2122,10 +2139,14 @@ function radioStationMark(station, player = false) {
     mark.classList.add('no-logo');
     return mark;
   }
-  const logo = h('img', { src: `img/radio/${station.logo}.png`, alt: '', loading: 'lazy' });
+  const logo = h('img', { src: radioStationLogoUrl(station), alt: '', loading: 'lazy' });
   logo.addEventListener('error', () => { logo.remove(); mark.classList.add('no-logo'); });
   mark.prepend(logo);
   return mark;
+}
+
+function radioStationLogoUrl(station) {
+  return station?.logo ? `img/radio/${station.logo}.png` : '';
 }
 
 function radioStationCards() {
@@ -2548,11 +2569,60 @@ const views = {
     ];
   },
   visualizer() {
+    const s = db.settings;
+    const modes = [['bars', 'Stolpci'], ['wave', 'Valovanje'], ['circle', 'Krog'], ['mirror', 'Zrcalo'], ['dots', 'Delci']];
+    const colorModes = [['theme', 'Tema'], ['rainbow', 'Mavrica'], ['electric', 'Električno']];
+    const set = (key, value, refresh = false) => {
+      s[key] = value;
+      save();
+      if (refresh) render();
+    };
+    const range = (label, key, min, max, suffix = '') => {
+      const displayValue = (value) => `${key === 'vizSmoothing' ? Math.round(value * 100) : value}${suffix}`;
+      const value = h('span', { class: 'viz-setting-value' }, displayValue(s[key]));
+      return h('label', { class: 'viz-setting' },
+        h('span', {}, label),
+        h('input', {
+          type: 'range', min, max, step: key === 'vizSmoothing' ? '0.01' : '1', value: s[key],
+          oninput: (event) => {
+            const next = Number(event.target.value);
+            set(key, next);
+            value.textContent = displayValue(next);
+          },
+        }),
+        value);
+    };
+    const control = (icon, title, onclick, disabled = false, on = false) => {
+      const button = h('button', { class: `viz-control${on ? ' on' : ''}`, title, onclick, disabled });
+      button.innerHTML = icon;
+      return button;
+    };
     return [
       hero(h('h2', {}, 'Vizualizator'), h('div', { class: 'note', style: 'margin:0' }, cur ? `${cur.title} · ${cur.artist}` : 'Predvajaj skladbo.')),
-      h('div', { class: 'toolbar' }, [['bars', 'Stolpci'], ['wave', 'Valovanje'], ['circle', 'Krog']].map(([k, l]) =>
-        btn(l, () => { db.settings.viz = k; save(); render(); }, db.settings.viz === k ? 'btn' : 'btn sec'))),
-      h('canvas', { id: 'viz-canvas' }),
+      h('section', { class: 'viz-panel' },
+        h('div', { class: 'viz-section-head' }, h('h3', {}, 'Način prikaza'), h('span', {}, 'Izberi odziv na zvok')),
+        h('div', { class: 'viz-mode-picker' }, modes.map(([key, label]) =>
+          btn(label, () => set('viz', key, true), s.viz === key ? 'btn' : 'btn sec'))),
+        h('canvas', { id: 'viz-canvas', style: `--viz-height:${s.vizHeight}vh` }),
+        h('div', { class: 'viz-controls', 'aria-label': 'Kontrole predvajanja' },
+          control(ICON.prev, 'Prejšnja', prev, !cur),
+          control(isPlaying() ? ICON.pause : ICON.play, isPlaying() ? 'Pavza' : 'Predvajaj', () => { togglePlay(); render(); }, !cur),
+          control(ICON.next, 'Naslednja', () => next(false), !cur),
+          control(ICON.shuffle, 'Naključno', () => { $('#btn-shuffle').click(); render(); }, false, shuffle),
+          control(ICON.repeat, 'Ponovi', () => { $('#btn-repeat').click(); render(); }, false, repeat !== 'off')),
+        h('div', { class: 'viz-options' },
+          h('div', { class: 'viz-option-group' },
+            h('b', {}, 'Videz'),
+            h('div', { class: 'viz-color-picker' }, colorModes.map(([key, label]) =>
+              btn(label, () => set('vizColor', key, true), s.vizColor === key ? 'btn' : 'btn sec'))),
+            h('label', { class: 'viz-toggle' },
+              h('input', { type: 'checkbox', checked: s.vizGlow ? 'checked' : null, onchange: (event) => set('vizGlow', event.target.checked) }),
+              h('span', {}, 'Sijaj'))),
+          h('div', { class: 'viz-option-group' },
+            h('b', {}, 'Odzivnost'),
+            range('Višina prikaza', 'vizHeight', 30, 70, ' vh'),
+            range('Glajenje zvoka', 'vizSmoothing', 0, 0.95, '%'))),
+        h('p', { class: 'viz-help' }, 'Za lokalne skladbe se uporablja dejanski zvok. Pri YouTube predvajanju aplikacija prikaže animiran približek.')),
     ];
   },
   settings() {
@@ -2633,11 +2703,15 @@ function renderSidebar() {
     if (icon) iconEl.innerHTML = icon;
     return button;
   };
+  const stationNav = makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo');
+  if (cur?.type === 'radio') {
+    stationNav.querySelector('.ico').replaceChildren(radioStationMark(cur.station));
+  }
   $('#sidebar').replaceChildren(
     h('div', { class: 'side-head' }, h('span', {}, 'Meni')),
     makeNav('home', ICON.home, 'transparent', 'Domov', 'Priporočeno'),
     nav('radio', '◉', 'transparent', 'Radio', 'Razpoloženjski miksi'),
-    makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo'),
+    stationNav,
     h('div', { class: 'side-head' }, h('span', {}, 'Tvoja knjižnica')),
     nav('liked', '♥', 'linear-gradient(135deg,#450af5,#c4efd9)', 'Všečkane skladbe', `${db.liked.length} skladb`),
     nav('library', '⬇', 'linear-gradient(135deg,#1ed760,#0a5c2a)', 'Offline knjižnica', `${db.library.length} skladb`),
@@ -2862,7 +2936,9 @@ function vizLoop() {
   const hgt = canvas.clientHeight;
   if (canvas.width !== w || canvas.height !== hgt) { canvas.width = w; canvas.height = hgt; }
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
+  const settings = db.settings;
   const real = vizSample();
+  if (analyser) analyser.smoothingTimeConstant = Number(settings.vizSmoothing) || 0;
   const n = 64;
   const data = new Float32Array(n);
   if (real) {
@@ -2873,15 +2949,21 @@ function vizLoop() {
     for (let i = 0; i < n; i++) data[i] = 0.25 + 0.2 * Math.sin(vizPhase + i * 0.3) + 0.12 * Math.sin(vizPhase * 1.7 + i * 0.11);
   }
   ctx.clearRect(0, 0, w, hgt);
-  ctx.fillStyle = accent;
-  ctx.strokeStyle = accent;
+  const colorFor = (index) => {
+    if (settings.vizColor === 'rainbow') return `hsl(${(index / n) * 320 + vizPhase * 30},90%,62%)`;
+    if (settings.vizColor === 'electric') return `hsl(${195 + (index / n) * 95},100%,65%)`;
+    return accent;
+  };
   ctx.lineWidth = 3;
-  const mode = db.settings.viz;
+  ctx.shadowBlur = settings.vizGlow ? 16 : 0;
+  const mode = settings.viz;
   if (mode === 'bars') {
     const bw = w / n;
     for (let i = 0; i < n; i++) {
       const bh = Math.max(3, data[i] * hgt * 0.9);
       ctx.globalAlpha = 0.45 + data[i] * 0.55;
+      ctx.fillStyle = colorFor(i);
+      ctx.shadowColor = colorFor(i);
       ctx.fillRect(i * bw + 2, hgt - bh, bw - 4, bh);
     }
   } else if (mode === 'wave') {
@@ -2891,8 +2973,10 @@ function vizLoop() {
       const y = hgt / 2 + (i % 2 ? -1 : 1) * data[i] * hgt * 0.4;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
+    ctx.strokeStyle = colorFor(n / 2);
+    ctx.shadowColor = ctx.strokeStyle;
     ctx.stroke();
-  } else {
+  } else if (mode === 'circle') {
     const cx = w / 2;
     const cy = hgt / 2;
     const r = Math.min(w, hgt) * 0.22;
@@ -2902,9 +2986,34 @@ function vizLoop() {
       ctx.beginPath();
       ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
       ctx.lineTo(cx + Math.cos(a) * (r + len), cy + Math.sin(a) * (r + len));
+      ctx.strokeStyle = colorFor(i);
+      ctx.shadowColor = ctx.strokeStyle;
       ctx.stroke();
     }
+  } else if (mode === 'mirror') {
+    const bw = w / n;
+    for (let i = 0; i < n; i++) {
+      const bh = Math.max(2, data[i] * hgt * 0.42);
+      ctx.fillStyle = colorFor(i);
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.globalAlpha = 0.4 + data[i] * 0.6;
+      ctx.fillRect(i * bw + 2, hgt / 2 - bh, bw - 4, bh);
+      ctx.fillRect(i * bw + 2, hgt / 2, bw - 4, bh);
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      const x = (i / (n - 1)) * w;
+      const y = hgt * (0.72 - data[i] * 0.45);
+      const radius = 2 + data[i] * 17;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = colorFor(i);
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.globalAlpha = 0.35 + data[i] * 0.65;
+      ctx.fill();
+    }
   }
+  ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
   vizRaf = requestAnimationFrame(vizLoop);
 }
