@@ -913,18 +913,19 @@ async function startTrack(track, start = 0, cross = false, requestId = playReque
     } catch (e) { toast(e.message); return false; }
     if (!isCurrentPlayRequest(requestId)) return false;
   }
-  if (!/^[\w-]{11}$/.test(track.videoId || '')) {
+  if (!/^[\w-]{11}$/.test(track.videoId || '') || track.videoLookupDone !== true) {
     const sourceArtist = track.sourceArtist || track.artist;
     try {
       const video = await findMusicVideo(track, sourceArtist);
+      track.videoLookupDone = true;
       if (video) {
         track.videoId = video.videoId;
         track.id = `yt:${video.videoId}`;
         if (isTopicArtist(track.artist)) track.artist = video.artist || track.artist.replace(/\s*-\s*Topic\b.*$/i, '');
         track.cover = video.cover || track.cover;
         delete track.sourceArtist;
-        save();
       }
+      save();
     } catch (e) {
       console.warn(`Music video lookup failed for "${track.title}":`, e);
     }
