@@ -23,6 +23,7 @@ const fmt = (s) => {
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const svg = (d, s = 20) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor"><path d="${d}"/></svg>`;
+const lineIcon = (content) => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${content}</svg>`;
 const ICON = {
   play: svg('M8 5v14l11-7z', 18),
   pause: svg('M6 5h4v14H6zm8 0h4v14h-4z', 18),
@@ -34,10 +35,16 @@ const ICON = {
   heart: svg('M12 21l-1.5-1.4C5.4 15 2 11.9 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.4-3.4 6.5-8.5 11.1z'),
   heartO: svg('M16.5 3c-1.7 0-3.4.8-4.5 2.1C10.9 3.8 9.2 3 7.5 3 4.4 3 2 5.4 2 8.5c0 3.4 3.4 6.5 8.5 11.1L12 21l1.5-1.4C18.6 15 22 11.900 22 8.500 22 5.400 19.600 3 16.500 3zm-4.400 15.500-.100.100-.100-.100C7.400 14.400 4 11.400 4 8.500 4 6.500 5.500 5 7.500 5c1.500 0 3 1 3.500 2.400h2C13.500 6 15 5 16.500 5c2 0 3.500 1.500 3.500 3.500 0 2.900-3.400 5.900-7.900 10z'),
   plus: svg('M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z'),
-  home: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/></svg>',
-  podcast: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg>',
-  radio: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/></svg>',
-  viz: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10v4m4-8v12m4-15v18m4-13v8m4-11v14m4-8v4"/></svg>',
+  home: lineIcon('<path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/>'),
+  podcast: lineIcon('<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/>'),
+  radio: lineIcon('<path d="M4 11v2m4-5v8m4-11v14m4-10v6m4-8v10"/><path d="m5 4 14 3"/>'),
+  radioStation: lineIcon('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/>'),
+  liked: lineIcon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/>'),
+  download: lineIcon('<path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 17v4h14v-4"/>'),
+  history: lineIcon('<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5m4-1v5l3 2"/>'),
+  users: lineIcon('<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.9m-1-12a4 4 0 0 1 0 7.8"/>'),
+  jam: lineIcon('<path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M5 14h2v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2zm14 0h-2v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/>'),
+  settings: lineIcon('<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1a1.7 1.7 0 1 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 1 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 1 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 1 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 1 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V4a1.7 1.7 0 1 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 1 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 1 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2.9z"/>'),
   lyr: svg('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z'),
   now: svg('M3 4h18v12H3zm2 2v8h14V6zm4 14h6v2H9z'),
   queue: svg('M3 6h13v2H3zm0 5h13v2H3zm0 5h9v2H3zm15-5v7.200a2.800 2.800 0 1 0 2 2.600V13h3v-2z'),
@@ -3293,12 +3300,12 @@ function renderSidebar() {
   $('#sidebar').replaceChildren(
     h('div', { class: 'side-head' }, h('span', {}, 'Meni')),
     makeNav('home', ICON.home, 'transparent', 'Domov', 'Priporočeno'),
-    nav('radio', '◉', 'transparent', 'Radio', 'Razpoloženjski miksi'),
+    makeNav('radio', ICON.radioStation, 'transparent', 'Radio', 'Razpoloženjski miksi'),
     makeNav('podcasts', ICON.podcast, 'linear-gradient(135deg,#8d2de2,#ec4899)', 'Podcasti', `${db.podcastCreators.length} ustvarjalcev`),
     makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo'),
     h('div', { class: 'side-head' }, h('span', {}, 'Tvoja knjižnica')),
-    nav('liked', '♥', 'linear-gradient(135deg,#450af5,#c4efd9)', 'Všečkane skladbe', `${db.liked.length} skladb`),
-    nav('library', '⬇', 'linear-gradient(135deg,#1ed760,#0a5c2a)', 'Offline knjižnica', `${db.library.length} skladb`),
+    makeNav('liked', ICON.liked, 'linear-gradient(135deg,#450af5,#c4efd9)', 'Všečkane skladbe', `${db.liked.length} skladb`),
+    makeNav('library', ICON.download, 'linear-gradient(135deg,#1ed760,#0a5c2a)', 'Offline knjižnica', `${db.library.length} skladb`),
     h('div', { class: 'side-head' }, h('span', {}, 'Seznami'), h('button', { title: 'Nov seznam', onclick: newPlaylist }, '+')),
     ...db.playlists.map((p) => {
       const b = nav('playlists', '', '#3a3a3a', p.name, `Seznam · ${p.tracks.length}`, p.id);
@@ -3308,13 +3315,13 @@ function renderSidebar() {
       return b;
     }),
     h('div', { class: 'side-head' }, h('span', {}, 'Predvajanje')),
-    nav('queue', '☰', '#333', 'Čakalna vrsta', `${queue.length} skladb`),
-    nav('history', '↺', '#333', 'Zgodovina', 'Nazadnje predvajano'),
+    makeNav('queue', ICON.queue, '#333', 'Čakalna vrsta', `${queue.length} skladb`),
+    makeNav('history', ICON.history, '#333', 'Zgodovina', 'Nazadnje predvajano'),
     makeNav('visualizer', ICON.viz, 'linear-gradient(135deg,#155c3a,#202d46)', 'Vizualizator', 'Zvok v živo'),
     h('div', { class: 'side-head' }, h('span', {}, 'Orodja')),
-    nav('users', '☺', '#333', 'Uporabniki', `${social.friends.length} prijateljev`),
-    nav('jam', '◎', '#333', 'Jam', jam.room ? 'Aktiven' : 'Skupno poslušanje'),
-    nav('settings', '⚙', '#333', 'Nastavitve', 'Strežnik, YouTube, Spotify, videz'),
+    makeNav('users', ICON.users, '#333', 'Uporabniki', `${social.friends.length} prijateljev`),
+    makeNav('jam', ICON.jam, '#333', 'Jam', jam.room ? 'Aktiven' : 'Skupno poslušanje'),
+    makeNav('settings', ICON.settings, '#333', 'Nastavitve', 'Strežnik, YouTube, Spotify, videz'),
     h('div', { id: 'net' }, navigator.onLine ? '● Povezano' : '○ Brez povezave: samo offline skladbe'),
     h('div', { id: 'appver', style: 'font-size:11px;opacity:.5;padding:2px 12px 6px' }, appVersion ? `v${appVersion}` : ''));
 }
