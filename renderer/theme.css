@@ -584,6 +584,9 @@ body.np #yt-wrap.show{width:min(52vw,99vh)!important}
 
 #np .np-logo{position:absolute;left:2.5vw;bottom:3vh;width:150px;height:46px;opacity:.9}
 
+#np .np-bottom-viz{position:absolute;left:0;right:0;bottom:0;width:100%;height:22vh;min-height:120px;max-height:230px;z-index:0;opacity:.9;pointer-events:none;mask-image:linear-gradient(to bottom,transparent 0,#000 18%,#000 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18%,#000 100%)}
+#np .np-body,#np .np-logo,#np .np-close{z-index:2}
+
 #particles{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:15}
 
 body.np #particles{z-index:35}

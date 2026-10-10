@@ -1750,6 +1750,7 @@ function buildNp() {
   npRefs.vol = h('input', { type: 'range', min: 0, max: 100, value: db.settings.volume });
   npRefs.vol.addEventListener('input', () => { $('#volume').value = npRefs.vol.value; $('#volume').dispatchEvent(new Event('input')); });
   npRefs.viz = h('canvas', { class: 'np-viz' });
+  npRefs.bottomViz = h('canvas', { class: 'np-bottom-viz', 'aria-hidden': 'true' });
   npRefs.list = h('div', { class: 'np-list' });
   const el = h('div', { id: 'np', hidden: true },
     h('button', { class: 'np-close', title: 'Zapri (Esc)', onclick: closeNp }, '✕'),
@@ -1758,6 +1759,7 @@ function buildNp() {
     h('div', { class: 'np-side np-right' }, h('div', { class: 'np-sh' }, 'Naslednje'), npRefs.list),
     npRefs.art,
     h('div', { class: 'np-lyrics' }, lyricsBox('np-box')),
+    npRefs.bottomViz,
     h('div', { class: 'np-body' },
       h('div', { class: 'np-meta' }, npRefs.title, npRefs.artist),
       h('div', { class: 'np-seek' }, npRefs.pos, npRefs.seek, npRefs.dur),
@@ -1883,6 +1885,61 @@ function npVizLoop() {
     ctx.fillStyle = `hsla(${(hue + 70 * Math.sin(d.ph + npRot) + 40) % 360},95%,70%,${0.25 + e * 0.5})`;
     ctx.fillRect(q[0], q[1], 1.6, 1.6);
   }
+  drawNpBottomViz();
+}
+function drawNpBottomViz() {
+  const c = npRefs.bottomViz;
+  if (!c) return;
+  const w = c.clientWidth;
+  const hh = c.clientHeight;
+  if (!w || !hh) return;
+  if (c.width !== w || c.height !== hh) { c.width = w; c.height = hh; }
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, w, hh);
+  const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#1ed760';
+  const hue = hexHue(accent);
+  const playing = cur && isPlaying();
+  const energy = Math.min(1, Math.max(0.08, npPulse * 1.4 + (playing ? 0.12 : 0)));
+  const layers = [
+    { offset: 0.72, amp: 0.12, hue: hue, alpha: 0.34 },
+    { offset: 0.62, amp: 0.16, hue: hue + 38, alpha: 0.48 },
+    { offset: 0.51, amp: 0.18, hue: hue + 78, alpha: 0.62 },
+    { offset: 0.42, amp: 0.13, hue: hue + 150, alpha: 0.42 },
+  ];
+  for (let layer = 0; layer < layers.length; layer++) {
+    const item = layers[layer];
+    const baseY = hh * item.offset;
+    const amp = hh * item.amp * (0.72 + energy * 0.85);
+    const points = [];
+    for (let i = 0; i <= 90; i++) {
+      const x = (i / 90) * w;
+      const band = npSm[(i * 3 + layer * 5) % npSm.length] || 0;
+      const y = baseY
+        + Math.sin(i * 0.16 + npTime * (1.2 + layer * 0.16)) * amp * 0.42
+        + Math.sin(i * 0.055 - npTime * 0.7 + layer) * amp * 0.54
+        + band * amp * 0.32;
+      points.push([x, y]);
+    }
+    const color = `hsla(${(item.hue + npTime * 4) % 360},95%,65%,${item.alpha})`;
+    const gradient = ctx.createLinearGradient(0, baseY - amp, 0, hh);
+    gradient.addColorStop(0, `hsla(${(item.hue + 12) % 360},95%,65%,${item.alpha * 0.7})`);
+    gradient.addColorStop(1, `hsla(${(item.hue + 45) % 360},95%,35%,0)`);
+    ctx.beginPath();
+    points.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    ctx.lineTo(w, hh);
+    ctx.lineTo(0, hh);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.beginPath();
+    points.forEach(([x, y], index) => index ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.4 + energy * 1.2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
 }
 const npSm = new Float32Array(32);
 let npPulse = 0;
