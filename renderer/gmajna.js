@@ -2552,32 +2552,39 @@ const views = {
         if (event.key === 'Enter') searchPodcasts(podcastSearch.query.trim());
       },
     });
-    return [
-      hero(h('h2', {}, 'Podcasti'),
-        h('div', { class: 'note' }, 'Poišči oddaje v katalogu in poslušaj njihove najnovejše epizode.')),
-      h('div', { class: 'toolbar podcast-toolbar' },
-        searchInput,
-        btn('Išči', () => searchPodcasts(podcastSearch.query.trim()), 'btn')),
-      h('h3', {}, 'Brskaj po temah'),
-      h('div', { class: 'chips podcast-topics' }, topics.map(([label, query]) => h('button', {
-        class: 'chip',
-        onclick: () => { podcastSearch.query = label; searchPodcasts(query); },
-      }, label))),
-      podcastSearch.loading ? h('div', { class: 'note' }, 'Iščem podcaste …') : null,
-      !podcastSearch.query && !podcastSearch.loading
-        ? h('div', { class: 'note' }, 'Vpiši ime podcasta in pritisni Enter.') : null,
-      podcastSearch.error ? h('div', { class: 'note' }, podcastSearch.error) : null,
-      podcastSearch.results.length ? h('h3', {}, 'Rezultati iskanja') : null,
-      podcastSearch.results.length
-        ? h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => podcastCard(show,
-          db.podcasts.some((item) => String(item.id) === String(show.id)))))
-        : null,
-      h('h3', {}, 'Tvoji podcasti'),
-      db.podcasts.length
-        ? h('div', { class: 'grid podcast-grid' }, db.podcasts.map((show) => podcastCard(show, true)))
-        : h('div', { class: 'note' }, 'Še nisi naročen na noben podcast. Poišči oddajo zgoraj.'),
-      h('div', { class: 'podcast-credit' }, 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'),
-    ];
+    return [h('div', { class: 'podcasts-page' },
+      h('section', { class: 'podcast-hero' },
+        h('div', { class: 'podcast-eyebrow' }, 'PODCASTI · ODKRIJ NOVE ZGODBE'),
+        h('h2', {}, 'Podcasti'),
+        h('div', { class: 'podcast-intro' }, 'Poišči oddaje v katalogu in poslušaj njihove najnovejše epizode.')),
+      h('section', { class: 'podcast-discovery' },
+        h('div', { class: 'podcast-toolbar' },
+          h('label', { class: 'podcast-searchbox' },
+            h('span', { class: 'podcast-search-icon', 'aria-hidden': 'true' }, '⌕'),
+            searchInput),
+          btn('Išči', () => searchPodcasts(podcastSearch.query.trim()), 'podcast-search-submit')),
+        h('div', { class: 'podcast-topic-heading' }, h('h3', {}, 'Brskaj po temah'),
+          h('span', {}, 'Morda te zanima')),
+        h('div', { class: 'chips podcast-topics' }, topics.map(([label, query]) => h('button', {
+          class: 'chip',
+          onclick: () => { podcastSearch.query = label; searchPodcasts(query); },
+        }, label))),
+        podcastSearch.loading ? h('div', { class: 'podcast-status' }, h('span', { class: 'podcast-spinner' }), 'Iščem podcaste …') : null,
+        !podcastSearch.query && !podcastSearch.loading
+          ? h('div', { class: 'podcast-hint' }, 'Vpiši ime podcasta in pritisni Enter.') : null,
+        podcastSearch.error ? h('div', { class: 'podcast-error' }, podcastSearch.error) : null),
+      podcastSearch.results.length ? h('section', { class: 'podcast-section' },
+        h('h3', {}, 'Rezultati iskanja'),
+        h('div', { class: 'grid podcast-grid' }, podcastSearch.results.map((show) => {
+          const subscribed = db.podcasts.some((item) => String(item.id) === String(show.id));
+          return podcastCard(show, subscribed);
+        }))) : null,
+      h('section', { class: 'podcast-section' },
+        h('h3', {}, 'Tvoji podcasti'),
+        db.podcasts.length
+          ? h('div', { class: 'grid podcast-grid' }, db.podcasts.map((show) => podcastCard(show, true)))
+          : h('div', { class: 'podcast-empty' }, 'Še nisi naročen na noben podcast. Poišči oddajo zgoraj.')),
+      h('div', { class: 'podcast-credit' }, 'Katalog: Apple Podcasts · Epizode zagotavljajo izdajatelji podcastov.'))];
   },
   'podcast-show'() {
     const show = db.podcasts.find((item) => String(item.id) === String(viewArg))

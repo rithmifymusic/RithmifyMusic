@@ -5,6 +5,8 @@ window.I18N_EN = {
   'Učinki in nastavitve zvoka': 'Effects and sound settings',
   'Domov': 'Home',
   'Kaj želiš poslušati?': 'What do you want to listen to?',
+  'PODCASTI · ODKRIJ NOVE ZGODBE': 'PODCASTS · DISCOVER NEW STORIES',
+  'Morda te zanima': 'You might like',
   'Podcasti': 'Podcasts',
   'Poišči podcast …': 'Search podcasts …',
   'Poišči podcast': 'Search podcasts',
