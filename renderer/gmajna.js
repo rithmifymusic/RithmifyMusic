@@ -1306,7 +1306,7 @@ let pT = 0;
 const pDots = Array.from({ length: 90 }, () => ({
   x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, sw: 0.3 + Math.random() * 1.2,
 }));
-const snowFlakes = Array.from({ length: 140 }, () => ({
+const snowFlakes = Array.from({ length: 90 }, () => ({
   x: Math.random(), y: Math.random(), z: 0.3 + Math.random() * 0.7, ph: Math.random() * 6.28, big: Math.random() < 0.12,
 }));
 function drawSnow(ctx, w, hh, e) {
@@ -1367,8 +1367,41 @@ function drawSnow(ctx, w, hh, e) {
   for (let x = cw; x >= 0; x -= 10) ctx.lineTo(cx + x, cy + 5 + 4 * Math.abs(Math.sin(x / 31)) + 3 * Math.sin(x / 9 + 2));
   ctx.closePath();
   ctx.fill();
+  const seg = 120;
+  const colors = ['#ff4d5e', '#ffd25e', '#4dd68a', '#5eb0ff'];
+  ctx.strokeStyle = 'rgba(140,140,150,0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let x = 0; x < cw; x += seg) {
+    const x2 = Math.min(x + seg, cw);
+    ctx.moveTo(cx + x, cy + 2);
+    ctx.quadraticCurveTo(cx + (x + x2) / 2, cy + 18, cx + x2, cy + 2);
+  }
+  ctx.stroke();
+  let bi = 0;
+  for (let x = 0; x < cw; x += seg) {
+    for (let k = 1; k <= 3; k++) {
+      const t = k / 4;
+      const bx = cx + x + seg * t;
+      if (bx > cx + cw) break;
+      const by = cy + 2 + 32 * t * (1 - t) * 0.9 + 3;
+      const tw = 0.55 + 0.3 * Math.sin(pT * 1.6 + bi * 1.7);
+      ctx.fillStyle = colors[bi % 4];
+      ctx.globalAlpha = tw;
+      ctx.beginPath();
+      ctx.arc(bx, by, 2.6, 0, 6.283);
+      ctx.fill();
+      ctx.globalAlpha = tw * 0.25;
+      ctx.beginPath();
+      ctx.arc(bx, by, 6, 0, 6.283);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      bi++;
+    }
+  }
 }
 function startParticles() {
+  document.body.classList.toggle('xmas', !!db.settings.snow);
   const on = db.settings.particles !== false;
   pCanvas.style.display = on ? 'block' : 'none';
   if (on && !pRaf) pRaf = requestAnimationFrame(pLoop);
