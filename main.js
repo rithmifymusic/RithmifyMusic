@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { pipeline } = require('stream/promises');
+const ytmusic = require('./ytmusic');
 
 // Keep the data folder from before the rename to Rythmify so accounts and the offline library stay intact.
 app.setPath('userData', path.join(app.getPath('appData'), 'Gmajna Music Priv'));
@@ -321,35 +322,11 @@ ipcMain.handle('store:get', () => readStore());
 ipcMain.handle('store:set', (_e, data) => { writeStore(data); return true; });
 ipcMain.handle('app:info', () => ({ port, offlineDir }));
 
-// Unofficial YouTube Music search; it needs no Data API key but may be rate-limited or change.
-ipcMain.handle('yt:search', async (_e, query) => {
-  const r = await fetch('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: 'https://music.youtube.com', 'User-Agent': 'Mozilla/5.0' },
-    body: JSON.stringify({
-      context: { client: { clientName: 'WEB_REMIX', clientVersion: '1.20240918.01.00', hl: 'sl', gl: 'SI' } },
-      query: String(query || '').slice(0, 200), params: 'EgWKAQIIAWoKEAkQBRAKEAMQBA==',
-    }),
-  });
-  if (!r.ok) throw new Error(`InnerTube ${r.status}`);
-  const j = await r.json();
-  const sections = j.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents || [];
-  const out = [];
-  for (const s of sections) {
-    for (const c of s.musicShelfRenderer?.contents || []) {
-      const i = c.musicResponsiveListItemRenderer;
-      const videoId = i?.playlistItemData?.videoId;
-      if (!videoId) continue;
-      const col = (n) => (i.flexColumns?.[n]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || []).map((x) => x.text);
-      const meta = col(1).join('').split(' • ');
-      const dur = /^(?:(\d+):)?(\d+):(\d+)$/.exec(meta[meta.length - 1] || '');
-      const seconds = dur ? (+dur[1] || 0) * 3600 + +dur[2] * 60 + +dur[3] : 0;
-      const thumb = i.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.slice(-1)[0]?.url || '';
-      out.push({ videoId, title: col(0).join(''), artist: meta[0] || '', seconds, cover: thumb.replace(/=w\d+-h\d+.*$/, '=w226-h226') });
-    }
-  }
-  return out;
-});
+// Unofficial YouTube Music (see ytmusic.js); it needs no Data API key but may be rate-limited or change.
+ipcMain.handle('yt:search', (_e, query) => ytmusic.search(query));
+ipcMain.handle('yt:searchKind', (_e, query, kind) => ytmusic.searchKind(query, kind));
+ipcMain.handle('yt:browse', (_e, browseId) => ytmusic.browse(browseId));
+ipcMain.handle('yt:radio', (_e, seed) => ytmusic.radio(seed));
 
 // Synced lyrics from LRCLIB (free, no key). Titles from YouTube are noisy, so try a few cleaned variants.
 ipcMain.handle('lyrics:get', async (_e, { title, artist, duration } = {}) => {

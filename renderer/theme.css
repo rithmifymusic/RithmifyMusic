@@ -712,4 +712,128 @@ body.summer-mode #sidebar,body.summer-mode #side-panel{background:linear-gradien
 body.summer-mode #content{background:linear-gradient(155deg,rgba(9,53,56,.84),rgba(7,26,38,.94))}
 body.summer-mode #player{background:linear-gradient(100deg,#0b393b,#102c3b,#16434a);border-top:1px solid #38e0cb;box-shadow:0 -2px 20px rgba(35,220,200,.2)}
 body.summer-mode #player #btn-play{background:linear-gradient(135deg,#ffe27b,#ffad47)!important;color:#38220a!important;box-shadow:0 0 16px rgba(255,196,77,.48)}
+
+/* ---------- Navigation arrows ---------- */
+#btn-back,#btn-fwd{display:grid;place-items:center;width:38px;height:38px;flex:none;padding:0;line-height:0;background:#18181a;color:var(--text)}
+#btn-back svg,#btn-fwd svg,#searchbox .search-ico svg{display:block}
+#btn-back:not(:disabled):hover,#btn-fwd:not(:disabled):hover{background:var(--hover)}
+#btn-back:disabled,#btn-fwd:disabled{opacity:.32;cursor:default;transform:none}
+#searchbox .search-ico{display:grid;place-items:center;width:20px;height:20px;flex:none;color:var(--muted)}
+#searchbox:focus-within .search-ico{color:var(--text)}
+.podcast-search-icon{display:grid;place-items:center;width:22px;height:22px;flex:none}
+.podcast-search-icon svg{display:block}
+/* The sidebar keeps its look; it is only a little wider so "Slovenske radijske postaje" stays on one line. */
+@media(min-width:1001px){:root{--sidebar-width:250px}}
+
+/* ---------- Section headings ---------- */
+#content .section-head{margin:26px 0 12px}
+#content .section-head h3{margin:0}
+.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px;max-width:none}
+.eyebrow{display:block;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.14em;color:color-mix(in srgb,var(--accent) 78%,#fff)}
+.chip.ghost{background:transparent;border:1px dashed #ffffff30;color:var(--muted)}
+.artist-link{display:inline;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.artist-link:hover,.artist-link:focus-visible{color:var(--text);text-decoration:underline;outline:0}
+#player #now-artist .artist-link{display:inline;max-width:100%;margin:0;padding:0;border-radius:0;background:none;color:inherit;font:inherit;line-height:inherit;text-align:left;vertical-align:baseline}
+#player #now-artist .artist-link:hover,#player #now-artist .artist-link:focus-visible{color:var(--text);text-decoration:underline}
+
+/* ---------- Track list ---------- */
+.row.trow{grid-template-columns:36px 44px minmax(0,1fr) 52px auto;gap:12px;padding:6px 10px 6px 4px;border-radius:8px}
+.row.trow.has-album{grid-template-columns:36px 44px minmax(0,1.5fr) minmax(0,1fr) 52px auto}
+.row.trow:hover{background:#ffffff12}
+.row.trow.playing{background:color-mix(in srgb,var(--accent) 11%,transparent)}
+.row.trow .cover{width:44px;height:44px;border-radius:6px}
+.tr-cover{line-height:0;cursor:pointer}
+.tr-num{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:none;color:var(--muted);font:inherit;font-size:14px;font-variant-numeric:tabular-nums;cursor:pointer}
+.tr-num .tr-play,.tr-num .eq{display:none}
+.tr-num .tr-play svg{display:block;width:18px;height:18px}
+.row.trow:hover .tr-num .tr-idx,.row.trow.playing .tr-num .tr-idx{display:none}
+.row.trow:hover .tr-num .tr-play{display:block;color:var(--text)}
+.row.trow.playing .tr-num .eq{display:flex}
+.row.trow.playing:hover .tr-num .eq{display:none}
+.eq{align-items:flex-end;gap:2px;height:14px}
+.eq i{width:3px;height:100%;border-radius:1px;background:var(--accent);transform-origin:bottom;transform:scaleY(.45);animation:trEq .9s ease-in-out infinite alternate;animation-play-state:paused}
+.eq i:nth-child(2){animation-delay:-.3s}
+.eq i:nth-child(3){animation-delay:-.6s}
+body.is-playing .eq i{animation-play-state:running}
+@keyframes trEq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.tr-main{min-width:0}
+.tr-title{display:flex;align-items:center;gap:8px;min-width:0}
+.tr-title .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.row.trow .a{margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
+.row.trow .badge{flex:none;margin:0;padding:2px 6px;border-radius:4px;background:#ffffff1c;color:var(--muted);font-size:9.5px;letter-spacing:.06em}
+.tr-album{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:13px}
+.tr-dur{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right}
+.row.trow .acts{display:flex;align-items:center;gap:2px;opacity:1}
+.row.trow .acts>*{opacity:0;transition:opacity .15s,background .15s,color .15s}
+.row.trow:hover .acts>*,.row.trow:focus-within .acts>*,.row.trow.playing .acts>*,.row.trow .acts>.icon-btn.on{opacity:1}
+.row.trow .acts .icon-btn{display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:none;color:var(--muted);font-size:0;cursor:pointer}
+.row.trow .acts .icon-btn:hover{background:#ffffff1f;color:var(--text)}
+.row.trow .acts .icon-btn.on{color:var(--accent)}
+.icon-btn svg{display:block;width:18px;height:18px}
+.row.trow.skel-row{pointer-events:none}
+@media (max-width:980px){
+  .row.trow.has-album{grid-template-columns:36px 44px minmax(0,1fr) 52px auto}
+  .tr-album{display:none}
+}
+#app.with-side .tr-album{display:none}
+#app.with-side .row.trow.has-album{grid-template-columns:36px 44px minmax(0,1fr) 52px auto}
+
+/* ---------- Loading placeholders and errors ---------- */
+.skel{display:block;border-radius:6px;background:linear-gradient(90deg,#ffffff0d 25%,#ffffff1a 37%,#ffffff0d 63%);background-size:400% 100%;animation:skel 1.3s ease infinite}
+@keyframes skel{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.skel.line{height:12px;width:60%;margin:6px 0}
+.skel.line.short{width:34%;height:10px}
+.skel.line.wide{width:min(360px,70%);height:34px;margin:8px 0}
+.skel.avatar{width:112px;height:112px;border-radius:50%;flex:none}
+.skel.avatar.xxl{width:176px;height:176px}
+.skel.pl-icon{width:140px;height:140px;border-radius:8px;flex:none}
+.skel.dot{width:24px;height:12px;justify-self:center}
+.skel.sq{width:44px;height:44px;border-radius:6px}
+.load-error{max-width:520px;margin:26px 0;padding:20px 22px;border:1px solid #ffffff14;border-radius:12px;background:#ffffff0d}
+.load-error b{font-size:16px}
+.load-error p{margin:6px 0 14px;color:var(--muted);line-height:1.5}
+.load-error .toolbar{margin:0}
+
+/* ---------- Artists ---------- */
+.artist-avatar{width:84px;height:84px;flex:none;border-radius:50%;background:#222;object-fit:cover;box-shadow:0 10px 30px #0008}
+.artist-avatar.ph{font-size:34px}
+.artist-avatar.xl{width:112px;height:112px}
+.artist-avatar.xl.ph{font-size:44px}
+.artist-avatar.xxl{width:176px;height:176px}
+.artist-avatar.xxl.ph{font-size:72px}
+.artist-block{margin:4px 0 6px}
+.artist-top{display:flex;align-items:center;gap:22px;max-width:760px;padding:18px 22px;border:1px solid #ffffff14;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 20%,#1c1c1f),#141416 72%);cursor:pointer;transition:transform .16s,border-color .16s,box-shadow .16s}
+.artist-top:not(.skel-top):hover,.artist-top:focus-visible{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 14px 34px #0006;outline:0}
+.artist-top.skel-top{cursor:default}
+.artist-top-info{min-width:0;flex:1}
+.artist-top-info b{display:block;margin:3px 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:28px;letter-spacing:-.03em}
+.artist-top-info small{display:block;color:var(--muted);font-size:13px}
+.artist-top-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.artist-top-actions .btn{padding:9px 20px;font-size:13px}
+.artist-more h4{margin:18px 0 2px;color:var(--muted);font-size:13px;font-weight:700}
+.artist-chips{display:flex;gap:6px;padding:4px 2px 12px;overflow-x:auto}
+.artist-chip{flex:none;width:140px;padding:12px 10px;border-radius:12px;text-align:center;cursor:pointer;transition:background .15s}
+.artist-chip:hover,.artist-chip:focus-visible{background:#ffffff12;outline:0}
+.artist-chip .artist-avatar{display:block;width:104px;height:104px;margin:0 auto 10px}
+.artist-chip .artist-avatar.ph{font-size:40px}
+.artist-chip b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.artist-chip small{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11.5px}
+#content .hero.artist-hero{position:relative;overflow:hidden;isolation:isolate;padding-top:26px;padding-bottom:8px;background:#101012}
+.artist-hero-bg{position:absolute;inset:-40px;z-index:-1;background-position:center 25%;background-size:cover;filter:blur(46px) saturate(1.25) brightness(.5);opacity:.9;transform:scale(1.15)}
+.artist-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(9,9,11,0),rgba(9,9,11,.88))}
+.artist-hero-body{display:flex;align-items:flex-end;gap:26px;margin-bottom:18px}
+.artist-hero-text{min-width:0}
+#content .artist-hero h2{margin:2px 0 8px;font-size:clamp(34px,5.2vw,68px);line-height:1.02;letter-spacing:-.045em;overflow-wrap:anywhere;text-shadow:0 4px 30px #0008}
+.artist-stats{color:#dcdce0;font-size:13.5px}
+.artist-actions{margin:0 0 12px}
+.btn.following{border-color:var(--accent);color:var(--accent)}
+.artist-about{max-width:760px;color:#cfcfd3;line-height:1.65;white-space:pre-line}
+.artist-about.clamped{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:4}
+.album-meta{display:flex;flex-wrap:wrap;align-items:center;margin:6px 0 0}
+.album-meta .artist-link{color:var(--text);font-weight:700}
+.grid.video-grid{grid-auto-columns:minmax(220px,260px)}
+.video-thumb{position:relative;line-height:0}
+.video-card .cover{width:100%;aspect-ratio:16/9;border-radius:7px;object-fit:cover}
+.video-card .playfab{top:auto;right:8px;bottom:8px}
+.card .playfab:focus-visible{opacity:1;transform:none}
 body.disco-mode .beta-badge,body.newyear-mode .beta-badge,body.halloween-mode .beta-badge,body.valentine-mode .beta-badge,body.summer-mode .beta-badge{color:#fff;background:linear-gradient(110deg,#833bdb,#e550ae 55%,#23bde0);box-shadow:0 0 10px rgba(191,66,255,.45)}

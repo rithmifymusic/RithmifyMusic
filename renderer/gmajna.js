@@ -51,6 +51,8 @@ const ICON = {
   lyr: svg('M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z'),
   now: svg('M3 4h18v12H3zm2 2v8h14V6zm4 14h6v2H9z'),
   queue: svg('M3 6h13v2H3zm0 5h13v2H3zm0 5h9v2H3zm15-5v7.200a2.800 2.800 0 1 0 2 2.600V13h3v-2z'),
+  queueAdd: svg('M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z', 18),
+  playlistAdd: svg('M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z', 18),
   mini: svg('M14 3h7v7h-2V6.400l-5.300 5.300-1.400-1.400L17.600 5H14zM3 14h2v3.600l5.300-5.300 1.400 1.400L6.400 19H10v2H3z', 18),
 };
 const SI_RADIO_STATIONS = [
@@ -58,7 +60,7 @@ const SI_RADIO_STATIONS = [
   { id: 'ena', name: 'Radio 1', freq: '89.7 FM', style: 'Največji hiti', group: 'Pop', color: '#ee4266', stream: 'https://live.radio.si/Radio1', page: 'https://siradio.si/ena/', logo: 'ena', bands: ['FM', 'DAB'] },
   { id: 'frajer', name: 'Radio Frajer', freq: 'Spletni radio', style: 'Domaci in tuji hiti', group: 'Domaca', color: '#cf5b47', stream: 'https://stream.nextmedia.si/proxy/frajer_1?mp=/frajer', page: 'https://radiofrajer.si/', logo: 'radio-frajer', bands: ['DAB'] },
   { id: 'juboks', name: 'Radio Juboks', freq: 'DAB+', style: 'Domaci in tuji hiti � nostalgija', group: 'DAB', color: '#d4a63c', stream: 'https://stream.nextmedia.si/proxy/juboks_1?mp=/juboks?uid=jubweb', page: 'https://www.juboks.si/live/juboks', logo: 'juboks', bands: ['DAB'] },
-  { id: 'center-x', name: 'Radio Center X', freq: '102.4 FM', style: 'Sodobni pop hiti', group: 'Pop', color: '#19a889', stream: 'https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', page: 'https://siradio.si/center/', logo: 'center', bands: ['FM', 'DAB'], streams: ['https://stream.nextmedia.si/proxy/center2?mp=/stream/1/', 'http://212.30.80.195:8000/stream/1/'] },
+  { id: 'center-x', name: 'Center X', freq: 'Spletni radio', style: 'Gen X hiti · 70., 80. in 90. leta', group: '80-ta', color: '#03c39a', stream: 'https://stream.nextmedia.si/proxy/centerx_1?mp=/centerx?uid=gexweb', page: 'https://centerx.si/', logo: 'center-x', bands: ['DAB'] },
   { id: 'radio80', name: 'Radio 1 80-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 80-ih', group: '80-ta', color: '#d47e39', stream: 'https://live.radio1.si/Radio80', page: 'https://radio.svet24.si/Radio80-v-zivo', logo: 'radio80', bands: ['DAB'] },
   { id: 'radio90', name: 'Radio 1 90-a', freq: 'Spletni radio', style: 'Najvecji hiti iz 90-ih', group: '90-ta', color: '#5c77bd', stream: 'https://live.radio1.si/Radio90', page: 'https://radio.svet24.si/Radio90-v-zivo', logo: 'ena', bands: ['DAB'] },
   { id: 'aktual', name: 'Radio Aktual', freq: '100.2 FM', style: 'Slovenski in domači hiti', group: 'Domača', color: '#6e5be8', stream: 'https://live.radio.si/Aktual', page: 'https://siradio.si/aktual/', logo: 'aktual', bands: ['FM', 'DAB'] },
@@ -142,7 +144,7 @@ const confirmBox = (title, text) => modal(title, () => h('div', { class: 'note' 
 
 // ---------- State ----------
 const defaultDb = () => ({
-  library: [], liked: [], playlists: [], history: [], lyrics: {}, podcasts: [], podcastCreators: [],
+  library: [], liked: [], playlists: [], history: [], lyrics: {}, podcasts: [], podcastCreators: [], followedArtists: [],
   settings: {
     theme: 'green', fade: 5, eq: { bass: 0, mid: 0, treble: 0 }, volume: 80,
     speed: 1, normalize: false, viz: 'bars', vizColor: 'theme', vizHeight: 52, vizGlow: true, vizSmoothing: 0.72, preset: 'flat', skipIntro: 0, skipOutro: 0,
@@ -421,6 +423,7 @@ function enterAccount(acc) {
   updateAvatar();
   view = 'home';
   viewArg = null;
+  navReset();
   renderAll();
   toggleSide(true);
   flush();
@@ -1515,7 +1518,7 @@ function updateNow() {
   const radio = cur?.type === 'radio';
   document.body.classList.toggle('radio-playing', radio);
   $('#now-title').textContent = cur ? cur.title : 'Nič se ne predvaja';
-  $('#now-artist').textContent = radio ? `V ŽIVO · ${cur.station.freq}` : cur ? cur.artist : '';
+  $('#now-artist').replaceChildren(radio ? `V ŽIVO · ${cur.station.freq}` : cur ? Artists.link(cur) : '');
   $('#btn-like').disabled = radio;
   $('#btn-addpl').disabled = radio;
   const liked = !!cur && isLiked(cur);
@@ -1534,6 +1537,8 @@ function updateNow() {
     }) : null;
   }
   if (!$('#side-panel').hidden) renderSidePanel();
+  markPlayingRows();
+  syncLikeButtons();
 }
 // Discord status: send only when the track, play state or position (seek) changes.
 let dcLast = { id: '', playing: null, pos: 0, at: 0, on: null };
@@ -1558,6 +1563,7 @@ setInterval(() => {
 
 function updatePlayBtn() {
   const playing = isPlaying();
+  document.body.classList.toggle('is-playing', playing);
   $('#btn-play').innerHTML = playing ? ICON.pause : ICON.play;
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = cur ? (playing ? 'playing' : 'paused') : 'none';
 }
@@ -2141,7 +2147,7 @@ $('#btn-theater').onclick = () => {
   setTheater(!theater);
 };
 new ResizeObserver(() => { if (theater) layoutTheater(); }).observe($('#content'));
-for (const sel of ['#sidebar', '#btn-home', '#avatar-btn']) $(sel).addEventListener('click', () => setTheater(false), true);
+for (const sel of ['#sidebar', '#btn-home', '#btn-back', '#btn-fwd', '#avatar-btn']) $(sel).addEventListener('click', () => setTheater(false), true);
 $('#q').addEventListener('keydown', (e) => { if (e.key === 'Enter') setTheater(false); });
 $('#btn-full').title = 'Celozaslonski prikaz predvajanja';
 $('#btn-full').innerHTML = svg('M5 5h5v2H7v3H5zm9 0h5v5h-2V7h-3zM5 14h2v3h3v2H5zm12 0h2v5h-5v-2h3z', 18);
@@ -2197,23 +2203,75 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ---------- Components ----------
-function trackRow(track, list, extra) {
-  const playing = cur && cur.id === track.id;
-  return h('div', { class: 'row' + (playing ? ' playing' : '') },
-    coverEl(track),
-    h('div', { style: 'min-width:0' },
-      h('div', {}, h('span', { class: 't', onclick: () => playFrom(list, track) }, track.title),
-        h('span', { class: 'badge' }, track.type === 'yt' ? 'YOUTUBE' : track.type === 'podcast' ? 'PODCAST' : 'OFFLINE')),
-      h('div', { class: 'a' }, track.artist)),
-    h('div', { class: 'acts' },
-      btn('+ vrsta', () => enqueue(track)),
-      btn(isLiked(track) ? '♥' : '♡', () => { toggleLike(track); render(); renderSidebar(); }),
-      btn('Seznam', () => addToPlaylist(track)),
-      extra));
+const eqBars = () => h('span', { class: 'eq', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'));
+function iconSpan(cls, html) {
+  const el = h('span', { class: cls, 'aria-hidden': 'true' });
+  el.innerHTML = html;
+  return el;
 }
-const trackRows = (tracks, empty, extraFor) => (tracks.length
-  ? tracks.map((t) => trackRow(t, tracks, extraFor && extraFor(t)))
-  : [h('div', { class: 'note' }, empty)]);
+function iconBtn(cls, html, label, onclick) {
+  const b = h('button', { class: `icon-btn ${cls}`.trim(), type: 'button', title: label, 'aria-label': label, onclick: (e) => { e.stopPropagation(); onclick(e); } });
+  b.innerHTML = html;
+  return b;
+}
+// Rows follow the current track and like state without re-rendering the whole view (keeps scroll and hover).
+function markPlayingRows() {
+  const id = cur?.id;
+  for (const row of document.querySelectorAll('#content .row.trow')) row.classList.toggle('playing', !!id && row.dataset.tid === id);
+}
+function syncLikeButtons() {
+  for (const b of document.querySelectorAll('#content .tr-like')) {
+    const on = isLiked({ id: b.dataset.tid });
+    if (b.classList.contains('on') === on) continue;
+    const label = on ? 'Odstrani iz všečkanih' : 'Všeč mi je';
+    b.classList.toggle('on', on);
+    b.innerHTML = on ? ICON.heart : ICON.heartO;
+    b.title = label;
+    b.setAttribute('aria-label', label);
+  }
+}
+function trackRow(track, list, extra, opts = {}) {
+  const playing = !!cur && cur.id === track.id;
+  const play = () => playFrom(list, track);
+  const liked = isLiked(track);
+  const seconds = track.seconds || track.duration || 0;
+  const badge = track.type === 'yt' ? '' : track.type === 'podcast' ? 'PODCAST' : 'OFFLINE';
+  const likeLabel = liked ? 'Odstrani iz všečkanih' : 'Všeč mi je';
+  const likeBtn = iconBtn(`tr-like${liked ? ' on' : ''}`, liked ? ICON.heart : ICON.heartO, likeLabel, () => {
+    toggleLike(track);
+    if (view === 'liked') render();
+    renderSidebar();
+  });
+  likeBtn.dataset.tid = track.id;
+  const album = opts.showAlbum
+    ? h('div', { class: 'tr-album' }, track.album && track.albumId
+      ? h('button', { class: 'artist-link', type: 'button', onclick: (e) => { e.stopPropagation(); Artists.openAlbum({ browseId: track.albumId, title: track.album, cover: track.cover }); } }, track.album)
+      : track.album || '')
+    : null;
+  return h('div', {
+    class: `row trow${playing ? ' playing' : ''}${opts.showAlbum ? ' has-album' : ''}`,
+    'data-tid': track.id,
+    ondblclick: (e) => { if (!e.target.closest('button')) play(); },
+  },
+  h('button', { class: 'tr-num', type: 'button', title: 'Predvajaj', 'aria-label': 'Predvajaj', onclick: play },
+    h('span', { class: 'tr-idx' }, opts.index != null ? String(opts.index) : '♪'), eqBars(), iconSpan('tr-play', ICON.play)),
+  h('div', { class: 'tr-cover', onclick: play }, coverEl(track)),
+  h('div', { class: 'tr-main' },
+    h('div', { class: 'tr-title' }, h('span', { class: 't', onclick: play }, track.title), badge ? h('span', { class: 'badge' }, badge) : null),
+    h('div', { class: 'a' }, Artists.link(track))),
+  album,
+  h('div', { class: 'tr-dur' }, seconds ? fmt(seconds) : ''),
+  h('div', { class: 'acts' },
+    likeBtn,
+    iconBtn('', ICON.queueAdd, 'Dodaj v čakalno vrsto', () => enqueue(track)),
+    iconBtn('', ICON.playlistAdd, 'Dodaj v seznam', () => addToPlaylist(track)),
+    extra));
+}
+const trackRows = (tracks, empty, extraFor, opts = {}) => {
+  if (!tracks.length) return empty ? [h('div', { class: 'note' }, empty)] : [];
+  const showAlbum = opts.showAlbum ?? tracks.some((t) => t.album);
+  return tracks.map((t, i) => trackRow(t, tracks, extraFor && extraFor(t), { index: i + 1, showAlbum }));
+};
 
 const cardEl = (track, list) => h('div', { class: 'card', onclick: () => playFrom(list, track) },
   coverEl(track), h('button', { class: 'playfab' }, '▶'),
@@ -2226,6 +2284,7 @@ const section = (title, tracks, empty) => [
 ];
 
 function hero(...kids) { return h('div', { class: 'hero' }, kids); }
+const sectionHead = (title, desc) => h('div', { class: 'section-head' }, h('h3', {}, title), desc ? h('p', {}, desc) : null);
 
 // ---------- YouTube Music search (via the built-in InnerTube client) ----------
 const ytCache = new Map();
@@ -2240,10 +2299,7 @@ async function ytSearch(q, limit = 25, songsOnly = false) {
 async function ytSearchRaw(q, limit = 25, songsOnly = false) {
   const found = await window.gmajna.ytSearch(q);
   const items = found.filter((t) => !songsOnly || (t.seconds >= 90 && t.seconds <= 480)).slice(0, songsOnly ? 50 : limit);
-  return items.map((t) => ({
-    id: `yt:${t.videoId}`, type: 'yt', videoId: t.videoId,
-    title: decode(t.title), artist: decode(t.artist), cover: t.cover,
-  }));
+  return items.map(Artists.toTrack);
 }
 
 // ---------- Spotify (Web API, PKCE login; only used to import playlists) ----------
@@ -2324,17 +2380,11 @@ async function spImport() {
   } catch (e) { toast(`Spotify: ${e.message}`); }
 }
 
-async function doSearch(q) {
-  searchState = { q, results: null, error: '' };
-  view = 'search';
-  if (!q) { renderAll(); return; }
-  if (!navigator.onLine) searchState.error = 'Brez povezave.';
-  else {
-    try { searchState.results = await ytSearch(q); } catch (e) { searchState.error = e.message; }
-  }
-  renderAll();
-}
-$('#q').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch($('#q').value.trim()); });
+async function doSearch(q) { return Artists.search(q); }
+$('#q').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doSearch($('#q').value.trim());
+  else if (e.key === 'Escape') { $('#q').value = ''; $('#q').blur(); }
+});
 $('#btn-home').onclick = () => { view = 'home'; viewArg = null; renderAll(); };
 
 // ---------- Friends & shared playlists ----------
@@ -2684,6 +2734,7 @@ const SPECIAL_MIXES = [
   { key: 'folk', title: 'Narodna in folk', sub: 'Narodnozabavna, polka, harmonika', region: 'si', q: ['slovenska narodnozabavna glasba', 'slovenska polka harmonika'] },
 ];
 const moodMix = ([l, q]) => ({ key: `m:${l}`, title: l, sub: 'Razpoloženjski miks', q: [q] });
+const artistMix = (a) => ({ key: `ar:${a.browseId}`, title: `Miks: ${a.name}`, sub: 'Izvajalec in podobni', q: [a.name], artist: a.name, browseId: a.browseId, cover: a.cover || '' });
 const GENRES = [
   ['Pop', 'pop hit songs'], ['Rock', 'classic rock hits'], ['Hip-hop', 'hip hop rap hits'], ['Elektronska', 'electronic dance songs'],
   ['House', 'house music songs'], ['Techno', 'techno tracks'], ['Jazz', 'jazz songs'], ['Klasika', 'classical music playlist'],
@@ -2759,6 +2810,7 @@ function topArtists(n) {
 async function fetchMix(m) {
   if (mixCache[m.key]) return mixCache[m.key];
   if (!navigator.onLine) throw new Error('Brez povezave.');
+  if (m.radio || m.browseId) return (mixCache[m.key] = await Artists.fetchRadioMix(m));
   const tracks = (await Promise.all(mixSearchQueries(m).map((q) => ytSearch(q, 25, true)))).flat();
   const seen = new Set();
   const res = (mixCache[m.key] = shuffled(filterMixTracks(m, tracks)).filter((t) => (seen.has(t.id) ? false : seen.add(t.id))).slice(0, 80));
@@ -2777,6 +2829,7 @@ function setMixCovers(m, tracks) {
   save();
 }
 function mixCoverEl(m) {
+  if (m.cover) return collageEl([m.cover], 'mixcover');
   const covers = m.local ? [...db.liked, ...db.history, ...db.library].map((t) => t.cover).filter(Boolean).slice(0, 4) : (db.mixCovers || {})[m.key] || [];
   if (covers.length) return collageEl(covers, 'mixcover');
   return h('div', { class: 'mixcover', style: `background:${mixGradient(m.title)}` }, h('span', {}, m.title));
@@ -2786,7 +2839,7 @@ async function prefetchMixCovers(list) {
   if (prefetching || !navigator.onLine) return;
   prefetching = true;
   try {
-    for (const m of list.filter((x) => !x.local && !(db.mixCovers || {})[x.key]).slice(0, 14)) {
+    for (const m of list.filter((x) => !x.local && !x.cover && !x.radio && !x.browseId && !(db.mixCovers || {})[x.key]).slice(0, 14)) {
       if (!['home', 'radio'].includes(view)) break;
       try { setMixCovers(m, await fetchMix(m)); } catch { break; }
       const old = document.querySelector(`[data-mix="${CSS.escape(m.key)}"] .mixcover`);
@@ -2900,7 +2953,7 @@ const views = {
           }, 'YouTube')),
         h('div', { class: 'podcast-toolbar' },
           h('label', { class: 'podcast-searchbox' },
-            h('span', { class: 'podcast-search-icon', 'aria-hidden': 'true' }, '⌕'),
+            iconSpan('podcast-search-icon', '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>'),
             searchInput),
           btn('Išči', () => searchPodcasts(podcastSearch.query.trim()), 'podcast-search-submit')),
         h('div', { class: 'podcast-topic-heading' }, h('h3', {}, 'Brskaj po temah'),
@@ -2958,15 +3011,29 @@ const views = {
   },
   radio() {
     const mixes = [...SPECIAL_MIXES, ...MOODS.map(moodMix)];
-    const groups = [
-      ['Začni z radijsko postajo', mixes], ['Slovenska glasba', SI_MIXES], ['Glasbeni slogi', GENRES],
-      ['Desetletja', DECADES], ['Za vsak trenutek', ACTIVITIES],
+    const mine = [
+      ...(db.savedMixes || []),
+      ...(db.followedArtists || []).slice(0, 12).map(artistMix),
     ];
-    setTimeout(() => prefetchMixCovers(groups.flatMap((g) => g[1])), 300);
+    const groups = [
+      ['Za začetek', 'Najbolj priljubljeni miksi za vsak okus.', mixes],
+      ['Slovenska glasba', 'Pop, rock, rap, ansambli in balade domačih izvajalcev.', SI_MIXES],
+      ['Glasbeni slogi', 'Od popa in rocka do jazza in metala.', GENRES],
+      ['Desetletja', 'Potovanje skozi čas, od 60. let do danes.', DECADES],
+      ['Za vsak trenutek', 'Glasba za kuhanje, tek, dež in praznike.', ACTIVITIES],
+    ];
+    const everyMix = groups.flatMap((g) => g[2]);
+    setTimeout(() => prefetchMixCovers(groups.flatMap((g) => g[2])), 300);
     return [
-      hero(h('h2', {}, 'Radio'), h('div', { class: 'note', style: 'margin:0' }, 'Izberi razpoloženje ali glasbeni slog.')),
+      hero(
+        h('div', { class: 'eyebrow' }, 'MIKSI'),
+        h('h2', {}, 'Miksi za vsak trenutek'),
+        h('div', { class: 'note' }, 'Izberi razpoloženje, glasbeni slog ali desetletje in takoj poslušaj svež miks.'),
+        h('div', { class: 'toolbar' },
+          btn('✦ Preseneti me', () => openMix(everyMix[Math.floor(Math.random() * everyMix.length)]), 'btn'))),
       h('div', { class: 'chips' }, mixes.map((m) => h('button', { class: 'chip', onclick: () => openMix(m) }, m.title))),
-      ...groups.flatMap(([title, list]) => [h('h3', {}, title), h('div', { class: 'grid' }, list.map(mixCard))]),
+      mine.length ? [sectionHead('Tvoji miksi', 'Shranjeni miksi in miksi izvajalcev, ki jim slediš.'), h('div', { class: 'grid' }, mine.map(mixCard))] : null,
+      ...groups.flatMap(([title, desc, list]) => [sectionHead(title, desc), h('div', { class: 'grid' }, list.map(mixCard))]),
     ];
   },
   stations() {
@@ -2999,7 +3066,7 @@ const views = {
         h('div', { class: 'station-kicker' }, h('span', { class: 'station-live-dot' }), ' SLOVENIJA · RADIO V ŽIVO'),
         h('div', { class: 'station-hero-copy' },
           h('div', {},
-            h('h2', {}, 'Slovenski radio'),
+            h('h2', {}, 'Slovenske radijske postaje'),
             h('p', {}, 'FM in DAB postaje, ki jih lahko poslušaš prek spletnega toka.')),
           h('div', { class: 'station-count' }, h('b', {}, String(SI_RADIO_STATIONS.length)), h('span', {}, 'postaj')))),
       h('section', { class: 'station-player' },
@@ -3042,7 +3109,7 @@ const views = {
           btn('Osveži', () => { delete mixCache[m.key]; if (m.local) show(m.local()); else load(); }, 'btn sec'),
           m.key === 'my' || (db.savedMixes || []).some((s) => s.key === m.key)
             ? null
-            : btn('Shrani na profil', () => { db.savedMixes = [...(db.savedMixes || []), { key: m.key, title: m.title, sub: m.sub, q: m.q, region: m.region }]; save(); toast('Miks shranjen na tvoj profil.'); show(tracks); }, 'btn sec')),
+            : btn('Shrani na profil', () => { db.savedMixes = [...(db.savedMixes || []), { key: m.key, title: m.title, sub: m.sub, q: m.q, region: m.region, radio: m.radio, browseId: m.browseId, cover: m.cover, artist: m.artist }]; save(); toast('Miks shranjen na tvoj profil.'); show(tracks); }, 'btn sec')),
         ...trackRows(tracks, 'Ni skladb.'));
     };
     const load = () => {
@@ -3079,22 +3146,15 @@ const views = {
         { key: 'my', title: 'Moj miks', sub: 'Iz tvojih všečkov in zgodovine', local: myMixTracks },
         ...homeMixes,
       ].map(mixCard)),
+      (db.followedArtists || []).length ? [h('h3', {}, 'Tvoji izvajalci'), Artists.row(db.followedArtists)] : null,
       ...section('Nazadnje predvajano', db.history.slice(0, 12), 'Še nič predvajanega. Poišči skladbo ali dodaj svojo glasbo.'),
       ...section('Tvoja offline glasba', db.library.slice(-12).reverse(), 'Dodaj datoteke v Offline knjižnici.'),
       ...section('Všečkane', db.liked.slice(0, 12), 'Še nimaš všečkanih skladb.'),
     ];
   },
-  search() {
-    const q = searchState.q.toLowerCase();
-    const local = q ? db.library.filter((t) => `${t.title} ${t.artist}`.toLowerCase().includes(q)) : [];
-    return [
-      hero(h('h2', {}, searchState.q ? `Rezultati: ${searchState.q}` : 'Iskanje')),
-      !searchState.q && h('div', { class: 'note' }, 'Vpiši iskalni niz zgoraj in pritisni Enter.'),
-      searchState.error && h('div', { class: 'note' }, searchState.error),
-      local.length ? h('h3', {}, 'V knjižnici') : null, ...local.map((t) => trackRow(t, local)),
-      searchState.results ? [h('h3', {}, 'YouTube'), ...trackRows(searchState.results, 'Ni rezultatov.')] : null,
-    ];
-  },
+  search() { return Artists.searchView(); },
+  artist() { return Artists.artistView(); },
+  album() { return Artists.albumView(); },
   library() {
     return [
       hero(h('h2', {}, 'Offline knjižnica')),
@@ -3490,9 +3550,9 @@ function renderSidebar() {
   $('#sidebar').replaceChildren(
     h('div', { class: 'side-head' }, h('span', {}, 'Meni')),
     makeNav('home', ICON.home, 'transparent', 'Domov', 'Priporočeno'),
-    makeNav('radio', ICON.radioStation, 'transparent', 'Radio', 'Razpoloženjski miksi'),
+    makeNav('radio', ICON.radioStation, 'transparent', 'Miksi', 'Razpoloženjski miksi'),
     makeNav('podcasts', ICON.podcast, 'linear-gradient(135deg,#8d2de2,#ec4899)', 'Podcasti', `${db.podcastCreators.length} ustvarjalcev`),
-    makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske postaje', 'Radio v živo'),
+    makeNav('stations', ICON.radio, 'linear-gradient(135deg,#124f39,#18384e)', 'Slovenske radijske postaje', 'Radio v živo'),
     h('div', { class: 'side-head' }, h('span', {}, 'Tvoja knjižnica')),
     makeNav('liked', ICON.liked, 'linear-gradient(135deg,#450af5,#c4efd9)', 'Všečkane skladbe', `${db.liked.length} skladb`),
     makeNav('library', ICON.download, 'linear-gradient(135deg,#1ed760,#0a5c2a)', 'Offline knjižnica', `${db.library.length} skladb`),
@@ -3516,10 +3576,72 @@ function renderSidebar() {
     h('div', { id: 'appver', style: 'font-size:11px;opacity:.5;padding:2px 12px 6px' }, appVersion ? `v${appVersion}` : ''));
 }
 
+// Back / forward history: every change of view or argument that reaches render() becomes an entry.
+const nav = { back: [], forward: [], entry: null, key: '', pendingScroll: null, tries: 0 };
+const navKey = (v, a) => `${v}|${a && typeof a === 'object' ? a.browseId || a.key || a.id || '' : a ?? ''}`;
+function updateNavButtons() {
+  $('#btn-back').disabled = !nav.back.length;
+  $('#btn-fwd').disabled = !nav.forward.length;
+}
+function navReset() {
+  Object.assign(nav, { back: [], forward: [], entry: null, key: '', pendingScroll: null });
+  updateNavButtons();
+}
+function navTrack() {
+  const key = navKey(view, viewArg);
+  if (key === nav.key) return false;
+  if (nav.entry) {
+    nav.entry.scroll = $('#content').scrollTop;
+    nav.back.push(nav.entry);
+    if (nav.back.length > 60) nav.back.shift();
+    nav.forward = [];
+  }
+  nav.entry = { view, viewArg, scroll: 0 };
+  nav.key = key;
+  nav.pendingScroll = null;
+  updateNavButtons();
+  return true;
+}
+function navGo(delta) {
+  const target = (delta < 0 ? nav.back : nav.forward).pop();
+  if (!target || !account) return;
+  if (nav.entry) {
+    nav.entry.scroll = $('#content').scrollTop;
+    (delta < 0 ? nav.forward : nav.back).push(nav.entry);
+  }
+  nav.entry = target;
+  nav.key = navKey(target.view, target.viewArg);
+  nav.pendingScroll = target.scroll || 0;
+  nav.tries = 0;
+  view = target.view;
+  viewArg = target.viewArg;
+  if (view === 'search') void Artists.search(String(viewArg || '')); else renderAll();
+  updateNavButtons();
+}
+function applyPendingScroll() {
+  if (nav.pendingScroll == null) return;
+  const content = $('#content');
+  content.scrollTop = nav.pendingScroll;
+  if (Math.abs(content.scrollTop - nav.pendingScroll) < 3 || ++nav.tries > 4) nav.pendingScroll = null;
+}
+$('#btn-back').onclick = () => navGo(-1);
+$('#btn-fwd').onclick = () => navGo(1);
+window.addEventListener('mouseup', (e) => {
+  if (e.button === 3) { e.preventDefault(); navGo(-1); } else if (e.button === 4) { e.preventDefault(); navGo(1); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); navGo(-1); }
+  else if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); navGo(1); }
+  else if (e.key === '/' && !e.target.matches('input,textarea,select')) { e.preventDefault(); $('#q').focus(); $('#q').select(); }
+});
+
 function render() {
   if (!account) return;
+  const changed = navTrack();
   const content = $('#content');
   content.replaceChildren(...[views[view]()].flat(3).filter(Boolean));
+  if (changed) content.scrollTop = 0;
+  applyPendingScroll();
   if (view === 'visualizer' && !vizRaf) vizRaf = requestAnimationFrame(vizLoop);
 }
 function renderAll() { renderSidebar(); render(); }

@@ -13,8 +13,10 @@
     <div class="logo"><button class="round small" id="btn-fx" title="Učinki in nastavitve zvoka"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 7h10V5h2v2h4v2h-4v2h-2V9H4zm0 8h4v-2h2v2h10v2H10v2H8v-2H4z"/></svg></button><span class="brand-whole" role="img" aria-label="Rythmify"></span></div>
     <div id="fxmenu" hidden></div>
     <div id="top-center">
+      <button class="round" id="btn-back" title="Nazaj (Alt+←)" aria-label="Nazaj" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button>
+      <button class="round" id="btn-fwd" title="Naprej (Alt+→)" aria-label="Naprej" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button>
       <button class="round" id="btn-home" title="Domov">⌂</button>
-      <div id="searchbox"><span>⌕</span><input id="q" type="text" placeholder="Kaj želiš poslušati?"></div>
+      <div id="searchbox"><span class="search-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></span><input id="q" type="text" placeholder="Kaj želiš poslušati?" aria-label="Iskanje"></div>
     </div>
     <div id="top-right">
       <span id="profile-name"></span>
@@ -67,6 +69,7 @@
 <script src="/vendor/socket.io.js"></script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
+<script src="artist.js"></script>
 <script src="gmajna.js"></script>
 <script src="lyrics.js"></script>
 </body>
