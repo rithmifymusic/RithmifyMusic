@@ -1,0 +1,135 @@
+/* Phone layout. Loaded after theme.css, so these rules intentionally override the desktop grid. */
+#btn-mobile-nav { display: none; }
+
+@media (max-width: 720px) {
+  :root { --sidebar-width: 0px; }
+  html, body { overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+  #app, #app.with-side {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 0;
+    height: 100dvh;
+    padding: 0;
+  }
+
+  .logo { position: fixed; top: 10px; left: 8px; z-index: 14; }
+  .logo .brand-whole { display: none; }
+  #btn-mobile-nav, #btn-fx {
+    display: grid; place-items: center; width: 40px; height: 40px; margin: 0;
+    background: transparent; color: var(--text); font-size: 22px; line-height: 1; border: 0;
+  }
+  #topbar { left: 0; right: 0; height: 60px; padding: 0 10px 0 94px; grid-template-columns: minmax(0, 1fr) auto; }
+  #btn-fwd { display: none; }
+  #top-center { min-width: 0; gap: 6px; }
+  #top-center .round { width: 36px; height: 36px; flex: none; }
+  #btn-home { display: none; }
+  #searchbox { flex: 1; min-width: 0; width: auto; height: 38px; padding: 0 12px; }
+  #searchbox input { min-width: 0; }
+  #top-right { gap: 0; }
+  #profile-name { display: none; }
+  #avatar-btn { width: 34px; height: 34px; }
+  #menu { right: 0; }
+
+  /* The sidebar becomes a slide-in drawer. */
+  #sidebar {
+    position: fixed; z-index: 40; top: 0; bottom: 0; left: 0; grid-column: auto; grid-row: auto;
+    width: min(82vw, 320px); align-items: stretch; padding: 56px 12px 8px;
+    transform: translateX(-105%); transition: transform .2s ease; box-shadow: 8px 0 30px #000c;
+    /* The drawer fits the screen: items shrink instead of scrolling, and the scrollbar is hidden. */
+    overflow-x: hidden; overflow-y: auto; scrollbar-width: none;
+  }
+  #sidebar::-webkit-scrollbar { display: none; }
+  #sidebar.mobile-open { transform: none; }
+  #sidebar .nav { flex: 0 1 44px; width: 100%; justify-content: flex-start; min-height: 26px; padding: 2px 10px; }
+  #sidebar .nav > span:last-child { display: block; }
+  #sidebar .side-head { flex: 0 1 auto; width: auto; justify-content: space-between; font-size: 11px; padding: 8px 10px 4px; }
+  #sidebar #net { margin-top: auto; flex: none; font-size: 12px; padding: 6px 10px 0; }
+  #sidebar #appver { flex: none; padding-top: 0; }
+
+  #content { grid-column: 1; grid-row: 1; padding: 66px 14px 14px; }
+  #content .hero { margin: 0 -14px 14px; padding: 16px 14px 10px; }
+  #content .hero h2, h2 { font-size: 24px; }
+  .tiles { grid-template-columns: 1fr; }
+  .grid { grid-auto-columns: minmax(138px, 160px); }
+  .artist-hero-body { flex-direction: column; align-items: flex-start; gap: 14px; }
+
+  /* Touch devices have no hover: keep the row actions visible, drop the secondary columns. */
+  .row.trow, .row.trow.has-album { grid-template-columns: 30px 44px minmax(0, 1fr) auto; gap: 8px; }
+  .row.trow .tr-album, .row.trow .tr-dur { display: none; }
+  .row.trow .acts > * { opacity: 1; }
+  .row.trow .acts .icon-btn { width: 36px; height: 36px; }
+
+  /* Queue / lyrics open as a full-screen sheet above the content but below the player. */
+  #side-panel {
+    position: fixed; inset: 0; z-index: 30; width: auto; grid-column: auto; grid-row: auto;
+    padding: 70px 16px 190px;
+  }
+
+  /* Player card in the style of the system media card: blurred cover, big pill play button, one compact control row. */
+  #app #player {
+    position: relative; isolation: isolate; overflow: hidden; z-index: 36; grid-column: 1; grid-row: 2;
+    min-height: 0; margin: 4px 8px 8px; padding: 14px 16px 10px; border: 0; border-radius: 28px;
+    box-shadow: 0 6px 24px #0009;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto; grid-template-rows: auto auto;
+    gap: 10px 6px; align-items: center;
+  }
+  #player::before {
+    content: ""; position: absolute; inset: -20px; z-index: -1; opacity: .5;
+    background: var(--cover, none) center / cover no-repeat; filter: blur(22px) saturate(1.2);
+  }
+  #player::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #000a, #0004); }
+  #now, #controls, #controls .crow, #extras { display: contents; }
+  #now-cover, #btn-addpl, #pos, #dur, #btn-repeat { display: none !important; }
+  #now > div { grid-column: 1 / 4; grid-row: 1; min-width: 0; }
+  #now-title { font-size: 17px; font-weight: 800; }
+  #now-artist { font-size: 14px; color: #d8d8dc; }
+  #app #btn-play { grid-column: 5; grid-row: 1; width: 76px; height: 52px; border-radius: 26px; }
+  #app #btn-play svg { width: 26px; height: 26px; }
+  #extras > :not(#btn-queue) { display: none !important; }
+  #btn-queue { grid-column: 4; grid-row: 1; width: 40px; height: 40px; padding: 0; }
+  #btn-prev { grid-column: 1; grid-row: 2; }
+  #seek { grid-column: 2; grid-row: 2; width: 100%; height: 24px; accent-color: #fff; }
+  #btn-next { grid-column: 3; grid-row: 2; }
+  #btn-shuffle { grid-column: 4; grid-row: 2; }
+  #btn-like { grid-column: 5; grid-row: 2; justify-self: center; }
+  #btn-prev, #btn-next, #btn-shuffle, #btn-like, #btn-queue { width: 40px; height: 40px; padding: 0; }
+  body.radio-playing #seek { visibility: hidden; }
+  #app.with-side #player { grid-column: 1; }
+
+  /* Soft fades so the app blends into the system bars instead of ending in a hard colour edge. */
+  body::before, body::after { content: ""; position: fixed; left: 0; right: 0; z-index: 60; pointer-events: none; }
+  body::before { top: 0; height: 28px; background: linear-gradient(180deg, #000 0%, #000a 45%, transparent 100%); }
+  body::after { bottom: 0; height: 44px; background: linear-gradient(0deg, #000 0%, #000c 40%, transparent 100%); }
+  #app #player { margin-bottom: 14px; }
+
+  #fxmenu { top: 58px; left: 8px; right: 8px; width: auto; max-width: none; max-height: calc(100dvh - 150px); overflow-y: auto; z-index: 45; }
+
+  .profile-head { flex-direction: row; align-items: center; gap: 14px; }
+  .profile-av { flex: none; width: 84px; height: 84px; font-size: 36px; }
+  .profile-head > div { min-width: 0; }
+  /* Radio stations: the desktop flex-basis values become heights once the toolbar is a column. */
+  .station-toolbar { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 10px; }
+  .station-filters { flex: 0 0 auto; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .station-filters::-webkit-scrollbar { display: none; }
+  .station-filter { flex: none; white-space: nowrap; }
+  .station-search { flex: 0 0 auto; width: 100%; min-width: 0; height: 42px; }
+  .station-hero { min-height: 0; padding: 18px; }
+  .station-hero:after, .station-flag-emblem { width: 140px; height: 140px; right: -20px; top: -10px; }
+  .station-hero-copy h2 { font-size: 26px; margin-top: 12px; }
+  .station-player { padding: 12px; min-height: 0; }
+  .station-play { opacity: 1; transform: none; }
+  .chips { flex-wrap: wrap; }
+
+  .profile-head h2 { font-size: 30px; overflow-wrap: anywhere; }
+
+  /* Settings rows: label above the control instead of side by side. */
+  .setting { flex-wrap: wrap; gap: 6px 12px; }
+  .setting label { min-width: 0; flex: 1 1 100%; }
+  .setting > :not(label) { max-width: 100%; min-width: 0; }
+  .setting select, .setting input:not([type=checkbox]):not([type=range]), .setting textarea { flex: 1 1 100%; width: 100%; }
+  .setting input[type=range] { flex: 1 1 100%; width: 100%; }
+  #content input, #content select, #content textarea { max-width: 100%; }
+  .viz-options, .viz-setting { max-width: 100%; }
+  #yt-wrap { left: 8px; bottom: 150px; width: 224px; height: 126px; }
+  body.theater #yt-wrap.show { z-index: 6; }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rythmify</string>
+    <string name="title_activity_main">Rythmify</string>
+    <string name="package_name">com.gmajna.rythmify</string>
+    <string name="custom_url_scheme">com.gmajna.rythmify</string>
+</resources>

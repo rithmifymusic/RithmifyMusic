@@ -2,6 +2,20 @@
 
 Namizni Electron predvajalnik. Iskanje uporablja neuradni YouTube Music InnerTube endpoint, predvajanje pa YouTube vdelani predvajalnik; podprte so tudi lastne zvočne datoteke. Neuradni endpointi nimajo zagotovljene razpoložljivosti ali neomejene kvote. Aplikacija ne prenaša zvočnih datotek z YouTuba.
 
+Vmesnik vsebuje tudi mobilno pripravo (odziven prikaz, namestljiv web-app manifest,
+osnovni cache lupine in Media Session kontrole za zaklenjen zaslon). Android APK je
+ločen mobilni odjemalec z Android foreground audio service; Electron namiznega
+programa ni mogoče neposredno zapakirati v APK. Radijski in drugi dovoljeni zvočni
+streami lahko uporabljajo background predvajanje, YouTube video predvajanje pa je
+odvisno od pravil YouTuba.
+
+Android projekt je v mapi `android/`. Za osvežitev spletnih datotek in izdelavo
+razvojnega APK-ja uporabi `npm run mobile:sync` ter `npm run mobile:build`.
+Datoteka se ustvari kot `android/app/build/outputs/apk/debug/app-debug.apk`.
+Razvojni APK uporablja Android foreground service za ohranitev predvajanja pri
+minimizirani aplikaciji; za objavo v Trgovini Play je treba dodati produkcijski
+keystore in podpisano različico.
+
 Iskanje najde skladbe, izvajalce, albume in videoposnetke. Če iskani niz ustreza imenu izvajalca (ne glede na šumnike in manjše tipkarske napake), se na vrhu rezultatov prikaže kartica izvajalca. Klik nanjo odpre stran izvajalca z najbolj priljubljenimi skladbami, albumi, singli, videi, nastopi v živo, seznami predvajanja, podobnimi izvajalci in miksi (radio izvajalca ter njegove skladbe). Izvajalcu lahko slediš, albume in sezname pa shraniš kot svoj seznam. V iskalno polje lahko prilepiš tudi povezavo YouTube; odpre se videoposnetek z miksom podobnih skladb. Seznami skladb kažejo zaporedno številko, trajanje, album in klikljivo ime izvajalca, vrstica trenutne skladbe pa je označena z animiranim izenačevalnikom. Gumba za nazaj in naprej (tudi Alt+← in Alt+→ ali stranski gumbi miške) ohranita položaj pomikanja. Zavihek **Miksi** ponuja razpoloženja, glasbene sloge in desetletja.
 
 Zavihek **Slovenske radijske postaje** predvaja 48 slovenskih spletnih radijskih tokov, s filtri za FM, DAB in zvrstmi. Seznam, frekvence, tokovi in PNG-logotipi so povzeti po [SIradio.si](https://siradio.si/); uradni seznam DAB-programov je na [dab.si](https://dab.si/programi). Aplikacija predvaja internetne tokove, ne sprejema radijskega signala. Programi DAB brez javnega spletnega toka zato niso predvajani v aplikaciji.
@@ -9,6 +23,8 @@ Zavihek **Slovenske radijske postaje** predvaja 48 slovenskih spletnih radijskih
 Zavihek **Podcasti** išče oddaje v javnem katalogu Apple Podcasts ter bere epizode iz RSS-virov izdajateljev. Ustvarjalcem podcastov in YouTube kanalom lahko slediš; oddaje in najdeni videi se shranijo v uporabnikov profil ter prikažejo pod ustvarjalcem. Ponuja tudi samodejna YouTube priporočila; videoposnetki se predvajajo v vdelanem YouTube predvajalniku. Zvok in videoposnetki se ne prenašajo za poslušanje brez povezave.
 
 Zagon: npm start
+
+Različica 1.3.1 odpravlja zrušitev namizne aplikacije (`c0000005`) ob zagonu, ki jo je povzročal adblocker z DOM/kozmetičnimi filtri in preusmeritvami zahtev; mrežno blokiranje oglasov ostaja vklopljeno.
 
 ## Namestitveni program in samodejne posodobitve
 

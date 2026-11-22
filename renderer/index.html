@@ -3,14 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Rythmify</title>
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="mobile.css">
 </head>
 <body>
 <div id="ambient"><i></i><i></i><i></i></div>
 <div id="app">
   <header id="topbar">
-    <div class="logo"><button class="round small" id="btn-fx" title="Učinki in nastavitve zvoka"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 7h10V5h2v2h4v2h-4v2h-2V9H4zm0 8h4v-2h2v2h10v2H10v2H8v-2H4z"/></svg></button><span class="brand-whole" role="img" aria-label="Rythmify"></span></div>
+    <div class="logo"><button class="round small" id="btn-mobile-nav" title="Odpri meni" aria-label="Odpri meni">☰</button><button class="round small" id="btn-fx" title="Učinki in nastavitve zvoka"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 7h10V5h2v2h4v2h-4v2h-2V9H4zm0 8h4v-2h2v2h10v2H10v2H8v-2H4z"/></svg></button><span class="brand-whole" role="img" aria-label="Rythmify"></span></div>
     <div id="fxmenu" hidden></div>
     <div id="top-center">
       <button class="round" id="btn-back" title="Nazaj (Alt+←)" aria-label="Nazaj" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button>
@@ -67,10 +72,17 @@
 <div id="auth" hidden></div>
 <div id="yt-wrap"><div class="ytslot"><div id="yt"></div></div><div class="ytslot"><div id="yt2"></div></div></div>
 <script src="/vendor/socket.io.js"></script>
+<script src="mobile-bridge.js"></script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
 <script src="artist.js"></script>
 <script src="gmajna.js"></script>
 <script src="lyrics.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    // The app ships its own files; a cached shell would only serve stale copies after an update.
+    navigator.serviceWorker.getRegistrations().then((list) => list.forEach((item) => item.update().catch(() => {}))).catch(() => {});
+  }
+</script>
 </body>
 </html>

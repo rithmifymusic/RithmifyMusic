@@ -413,6 +413,8 @@ function enterAccount(acc) {
   root.session = acc.remember ? acc.id : '';
   pendingJamInvites.clear();
   renderJamInvitePopups();
+  // Phone speakers are quiet and the slider is hidden there, so play at full app volume (the hardware keys still control loudness).
+  if (window.Capacitor?.isNativePlatform?.()) db.settings.volume = 100;
   $('#volume').value = db.settings.volume;
   for (const el of audioEls) { el.volume = db.settings.volume / 100; el.playbackRate = db.settings.speed; }
   radioAudio.volume = db.settings.volume / 100;
@@ -425,7 +427,7 @@ function enterAccount(acc) {
   viewArg = null;
   navReset();
   renderAll();
-  toggleSide(true);
+  toggleSide(!window.matchMedia('(max-width: 720px)').matches);
   flush();
   setTimeout(() => { void restorePlayback(acc); }, 0);
   void pollJamInvites();
@@ -1527,12 +1529,13 @@ function updateNow() {
   const nc = $('#now-cover');
   const cover = cur?.cover || (radio ? radioStationLogoUrl(cur.station) : '');
   if (cover) { nc.src = cover; nc.style.display = 'block'; } else nc.style.display = 'none';
+  $('#player').style.setProperty('--cover', cover ? `url("${cover.replace(/["\\]/g, '')}")` : 'none');
   updatePlayBtn();
   syncNp();
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = cur ? new MediaMetadata({
       title: cur.title,
-      artist: cur.artist,
+      artist: radio ? `V ŽIVO · ${cur.station?.name || 'Radio'}` : cur.artist,
       artwork: cover ? [{ src: cover }] : [],
     }) : null;
   }
@@ -1565,6 +1568,17 @@ function updatePlayBtn() {
   const playing = isPlaying();
   document.body.classList.toggle('is-playing', playing);
   $('#btn-play').innerHTML = playing ? ICON.pause : ICON.play;
+  window.gmajna.mediaState?.({
+    title: cur ? cur.title : '',
+    artist: cur ? (cur.type === 'radio' ? `V ŽIVO · ${cur.station?.name || 'Radio'}` : cur.artist || '') : '',
+    cover: cur?.cover || (cur?.type === 'radio' ? radioStationLogoUrl(cur.station) : '') || '',
+    playing: !!cur && playing,
+    liked: !!cur && cur.type !== 'radio' && isLiked(cur),
+    shuffle: !!shuffle,
+    canLike: !!cur && cur.type !== 'radio',
+    position: cur && cur.type !== 'radio' ? getPos() : 0,
+    duration: cur && cur.type !== 'radio' ? getDur() : 0,
+  });
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = cur ? (playing ? 'playing' : 'paused') : 'none';
 }
 
@@ -1572,6 +1586,13 @@ setInterval(() => {
   if (!cur) return;
   const pos = getPos();
   const dur = getDur();
+  if ('mediaSession' in navigator && dur > 0 && Number.isFinite(dur)) {
+    try {
+      navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: Math.min(pos, dur) });
+    } catch (error) {
+      console.warn('Media Session position is unavailable:', error);
+    }
+  }
   if (!seeking) {
     $('#seek').value = dur ? Math.round((pos / dur) * 1000) : 0;
     $('#pos').textContent = fmt(pos);
@@ -2195,8 +2216,17 @@ if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('pause', togglePlay);
   navigator.mediaSession.setActionHandler('nexttrack', () => next(false));
   navigator.mediaSession.setActionHandler('previoustrack', prev);
+  navigator.mediaSession.setActionHandler('seekbackward', (event) => engineSeek(Math.max(0, getPos() - (event.seekOffset || 10))));
+  navigator.mediaSession.setActionHandler('seekforward', (event) => engineSeek(Math.min(getDur() || Infinity, getPos() + (event.seekOffset || 10))));
 }
-window.gmajna.onMedia((a) => { if (a === 'toggle') togglePlay(); else if (a === 'next') next(false); else prev(); });
+window.gmajna.onMedia((a, value) => {
+  if (a === 'toggle') togglePlay();
+  else if (a === 'next') next(false);
+  else if (a === 'prev') prev();
+  else if (a === 'seek') engineSeek(Number(value) || 0);
+  else if (a === 'shuffle') { cycleShuffle(); updatePlayBtn(); }
+  else if (a === 'like' && cur && cur.type !== 'radio') { toggleLike(cur); if (view === 'liked') render(); renderSidebar(); updateNow(); }
+});
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input,textarea,select')) return;
   if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
@@ -3575,6 +3605,19 @@ function renderSidebar() {
     h('div', { id: 'net' }, navigator.onLine ? '● Povezano' : '○ Brez povezave: samo offline skladbe'),
     h('div', { id: 'appver', style: 'font-size:11px;opacity:.5;padding:2px 12px 6px' }, appVersion ? `v${appVersion}` : ''));
 }
+$('#btn-mobile-nav').onclick = () => $('#sidebar').classList.toggle('mobile-open');
+// Tapping anywhere outside the drawer (e.g. the dimmed area on the right) closes it.
+document.addEventListener('click', (event) => {
+  const drawer = $('#sidebar');
+  if (!drawer.classList.contains('mobile-open')) return;
+  if (event.target.closest('#sidebar, #btn-mobile-nav')) return;
+  drawer.classList.remove('mobile-open');
+  event.stopPropagation();
+  event.preventDefault();
+}, true);
+$('#sidebar').addEventListener('click', (event) => {
+    if (event.target.closest('.nav')) $('#sidebar').classList.remove('mobile-open');
+});
 
 // Back / forward history: every change of view or argument that reaches render() becomes an entry.
 const nav = { back: [], forward: [], entry: null, key: '', pendingScroll: null, tries: 0 };

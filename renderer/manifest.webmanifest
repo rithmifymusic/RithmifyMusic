@@ -1,0 +1,19 @@
+{
+  "name": "Rythmify",
+  "short_name": "Rythmify",
+  "description": "Glasba, slovenske radijske postaje, izvajalci in miksi.",
+  "lang": "sl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "img/rythmify.ico",
+      "sizes": "any",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ]
+}

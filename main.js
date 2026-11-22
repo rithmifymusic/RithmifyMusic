@@ -17,6 +17,7 @@ const MIME = {
   '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml',
   '.mp3': 'audio/mpeg', '.flac': 'audio/flac', '.wav': 'audio/wav', '.ogg': 'audio/ogg',
   '.m4a': 'audio/mp4', '.aac': 'audio/aac', '.opus': 'audio/ogg',
+  '.webmanifest': 'application/manifest+json',
 };
 
 let win;
@@ -249,7 +250,17 @@ async function setupAdblock() {
       read: fs.promises.readFile,
       write: fs.promises.writeFile,
     });
-    blocker.enableBlockingInSession(session.defaultSession);
+    // Cosmetic filtering injects a preload into every frame (including the YouTube iframe) and calls
+    // insertCSS/executeJavaScript from the main process; ads inside the player are handled by startAdSkipper().
+    blocker.config.loadCosmeticFilters = false;
+    const web = session.defaultSession.webRequest;
+    // Same matching as the library, but a redirect to an inline resource becomes a plain cancel:
+    // the library's own onBeforeRequest crashes Electron 33 (0xc0000005) during startup.
+    web.onBeforeRequest({ urls: ['<all_urls>'] }, (details, callback) => {
+      try {
+        blocker.onBeforeRequest(details, (result) => callback(result && result.redirectURL ? { cancel: true } : result));
+      } catch { callback({}); }
+    });
   } catch (e) { console.error('adblock:', e.message); }
 }
 
